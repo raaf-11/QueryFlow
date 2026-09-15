@@ -6,4 +6,4 @@ __pycache__/
 venv/
 eval_results.csv
 .streamlit/
-commands.txt
+commands
