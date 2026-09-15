@@ -1,0 +1,8 @@
+.env
+chinook.db
+__pycache__/
+*.pyc
+.venv/
+venv/
+eval_results.csv
+.streamlit/

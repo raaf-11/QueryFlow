@@ -1,13 +1,3 @@
-"""
-Download the Chinook sample database and verify it.
-
-    python setup_db.py
-
-Chinook is a small fake digital music store: artists, albums, tracks,
-customers, invoices. It is the standard demo database for Text-to-SQL work
-because it has enough tables and foreign keys to make joins non-trivial.
-"""
-
 from __future__ import annotations
 
 import sqlite3
@@ -17,7 +7,6 @@ from pathlib import Path
 
 DEST = Path("chinook.db")
 
-# Tried in order. The GitHub release asset is the canonical one.
 SOURCES = [
     "https://github.com/lerocha/chinook-database/releases/download/v1.4.5/Chinook_Sqlite.sqlite",
     "https://raw.githubusercontent.com/lerocha/chinook-database/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite",
@@ -27,7 +16,6 @@ EXPECTED_TABLES = {
     "Album", "Artist", "Customer", "Employee", "Genre", "Invoice",
     "InvoiceLine", "MediaType", "Playlist", "PlaylistTrack", "Track",
 }
-
 
 def download() -> bool:
     for url in SOURCES:
@@ -40,7 +28,6 @@ def download() -> bool:
         except Exception as e:
             print(f"  failed: {e}")
     return False
-
 
 def verify() -> bool:
     con = sqlite3.connect(DEST)
@@ -59,7 +46,6 @@ def verify() -> bool:
         return True
     finally:
         con.close()
-
 
 if __name__ == "__main__":
     if DEST.exists():

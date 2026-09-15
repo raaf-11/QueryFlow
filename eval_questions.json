@@ -1,0 +1,152 @@
+[
+  {
+    "id": "e1",
+    "category": "easy",
+    "question": "How many customers are there in total?",
+    "gold_sql": "SELECT COUNT(*) AS n FROM Customer"
+  },
+  {
+    "id": "e2",
+    "category": "easy",
+    "question": "How many different countries have customers?",
+    "gold_sql": "SELECT COUNT(DISTINCT Country) AS n FROM Customer"
+  },
+  {
+    "id": "e3",
+    "category": "easy",
+    "question": "What is the average price of a track?",
+    "gold_sql": "SELECT ROUND(AVG(UnitPrice), 2) AS avg_price FROM Track"
+  },
+  {
+    "id": "e4",
+    "category": "easy",
+    "question": "Which genre has the most tracks?",
+    "gold_sql": "SELECT g.Name FROM Genre g JOIN Track t ON t.GenreId = g.GenreId GROUP BY g.GenreId ORDER BY COUNT(t.TrackId) DESC LIMIT 1"
+  },
+  {
+    "id": "e5",
+    "category": "easy",
+    "question": "Which employee supports the most customers?",
+    "gold_sql": "SELECT e.FirstName, e.LastName, COUNT(c.CustomerId) AS customer_count FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId GROUP BY e.EmployeeId ORDER BY customer_count DESC LIMIT 1"
+  },
+  {
+    "id": "h1",
+    "category": "hard",
+    "question": "For each country, find the customer who has spent the most money. Show the country, customer name, and amount spent.",
+    "gold_sql": "WITH customer_spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM customer_spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "h2",
+    "category": "hard",
+    "question": "For each genre, find the track that was bought the most. Show the genre, track name, and number of purchases.",
+    "gold_sql": "WITH track_sales AS (SELECT g.GenreId, g.Name AS Genre, t.TrackId, t.Name AS Track, SUM(il.Quantity) AS purchases FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY g.GenreId, t.TrackId), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY purchases DESC) AS rnk FROM track_sales) SELECT Genre, Track, purchases FROM ranked WHERE rnk = 1 ORDER BY Genre"
+  },
+  {
+    "id": "h3",
+    "category": "hard",
+    "question": "For every country, which employee is responsible for customers that generate the highest revenue?",
+    "gold_sql": "WITH employee_country_revenue AS (SELECT c.Country, e.EmployeeId, e.FirstName, e.LastName, SUM(i.Total) AS Revenue FROM Customer c JOIN Employee e ON e.EmployeeId = c.SupportRepId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, e.EmployeeId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Revenue DESC) AS rnk FROM employee_country_revenue) SELECT Country, FirstName, LastName, ROUND(Revenue, 2) AS Revenue FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "h4",
+    "category": "hard",
+    "question": "For each artist, find their best-selling album based on the total number of tracks purchased. Show artist, album and sales.",
+    "gold_sql": "WITH album_sales AS (SELECT ar.ArtistId, ar.Name AS Artist, al.AlbumId, al.Title AS Album, SUM(il.Quantity) AS Sales FROM Artist ar JOIN Album al ON al.ArtistId = ar.ArtistId JOIN Track t ON t.AlbumId = al.AlbumId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY ar.ArtistId, al.AlbumId), ranked AS (SELECT *, RANK() OVER (PARTITION BY ArtistId ORDER BY Sales DESC) AS rnk FROM album_sales) SELECT Artist, Album, Sales FROM ranked WHERE rnk = 1 ORDER BY Artist"
+  },
+  {
+    "id": "h5",
+    "category": "hard",
+    "question": "For each year, which customer spent the most money?",
+    "gold_sql": "WITH customer_yearly AS (SELECT strftime('%Y', i.InvoiceDate) AS year, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Invoice i JOIN Customer c ON c.CustomerId = i.CustomerId GROUP BY year, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY year ORDER BY Spent DESC) AS rnk FROM customer_yearly) SELECT year, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY year"
+  },
+  {
+    "id": "h6",
+    "category": "hard",
+    "question": "For each country, show the customer who bought the highest number of different tracks.",
+    "gold_sql": "WITH customer_tracks AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT il.TrackId) AS tracks FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY tracks DESC) AS rnk FROM customer_tracks) SELECT Country, FirstName, LastName, tracks FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "h7",
+    "category": "hard",
+    "question": "For each employee, find the country where their customers spent the most money.",
+    "gold_sql": "WITH employee_country AS (SELECT e.EmployeeId, e.FirstName, e.LastName, c.Country, SUM(i.Total) AS Revenue FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId, c.Country), ranked AS (SELECT *, RANK() OVER (PARTITION BY EmployeeId ORDER BY Revenue DESC) AS rnk FROM employee_country) SELECT FirstName, LastName, Country, ROUND(Revenue, 2) AS Revenue FROM ranked WHERE rnk = 1 ORDER BY EmployeeId"
+  },
+  {
+    "id": "h8",
+    "category": "hard",
+    "question": "Find the customers who have spent more than the average amount spent by customers in their own country.",
+    "gold_sql": "WITH customer_spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), country_avg AS (SELECT Country, AVG(Spent) AS avg_spent FROM customer_spending GROUP BY Country) SELECT cs.Country, cs.FirstName, cs.LastName, ROUND(cs.Spent, 2) AS Spent FROM customer_spending cs JOIN country_avg ca ON ca.Country = cs.Country WHERE cs.Spent > ca.avg_spent ORDER BY cs.Country, Spent DESC"
+  },
+  {
+    "id": "h9",
+    "category": "hard",
+    "question": "For every playlist, find the artist that appears most often in that playlist.",
+    "gold_sql": "WITH artist_playlist AS (SELECT p.PlaylistId, p.Name AS Playlist, ar.ArtistId, ar.Name AS Artist, COUNT(*) AS track_count FROM Playlist p JOIN PlaylistTrack pt ON pt.PlaylistId = p.PlaylistId JOIN Track t ON t.TrackId = pt.TrackId JOIN Album al ON al.AlbumId = t.AlbumId JOIN Artist ar ON ar.ArtistId = al.ArtistId GROUP BY p.PlaylistId, ar.ArtistId), ranked AS (SELECT *, RANK() OVER (PARTITION BY PlaylistId ORDER BY track_count DESC) AS rnk FROM artist_playlist) SELECT Playlist, Artist, track_count FROM ranked WHERE rnk = 1 ORDER BY Playlist"
+  },
+  {
+    "id": "h10",
+    "category": "hard",
+    "question": "For each genre, tell me the country whose customers bought the most tracks from that genre.",
+    "gold_sql": "WITH genre_country AS (SELECT g.GenreId, g.Name AS Genre, c.Country, SUM(il.Quantity) AS tracks FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId JOIN Invoice i ON i.InvoiceId = il.InvoiceId JOIN Customer c ON c.CustomerId = i.CustomerId GROUP BY g.GenreId, c.Country), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY tracks DESC) AS rnk FROM genre_country) SELECT Genre, Country, tracks FROM ranked WHERE rnk = 1 ORDER BY Genre"
+  },
+  {
+    "id": "h11",
+    "category": "hard",
+    "question": "Which customers have purchased tracks from at least 5 different genres?",
+    "gold_sql": "SELECT c.FirstName, c.LastName, COUNT(DISTINCT t.GenreId) AS genre_count FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId GROUP BY c.CustomerId HAVING COUNT(DISTINCT t.GenreId) >= 5 ORDER BY genre_count DESC"
+  },
+  {
+    "id": "h12",
+    "category": "hard",
+    "question": "For each customer, find the invoice on which they spent the most money.",
+    "gold_sql": "WITH ranked AS (SELECT c.CustomerId, c.FirstName, c.LastName, i.InvoiceDate, i.Total, RANK() OVER (PARTITION BY c.CustomerId ORDER BY i.Total DESC) AS rnk FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId) SELECT FirstName, LastName, InvoiceDate, ROUND(Total, 2) AS Total FROM ranked WHERE rnk = 1 ORDER BY LastName, FirstName"
+  },
+  {
+    "id": "h13",
+    "category": "hard",
+    "question": "Which customers have purchased from the largest number of different artists?",
+    "gold_sql": "SELECT c.FirstName, c.LastName, COUNT(DISTINCT ar.ArtistId) AS artists_purchased FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId JOIN Album al ON al.AlbumId = t.AlbumId JOIN Artist ar ON ar.ArtistId = al.ArtistId GROUP BY c.CustomerId ORDER BY artists_purchased DESC LIMIT 5"
+  },
+  {
+    "id": "h14",
+    "category": "hard",
+    "question": "For each country, which genre is liked most based on the number of tracks purchased?",
+    "gold_sql": "WITH country_genre AS (SELECT c.Country, g.GenreId, g.Name AS Genre, SUM(il.Quantity) AS purchases FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId JOIN Genre g ON g.GenreId = t.GenreId GROUP BY c.Country, g.GenreId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY purchases DESC) AS rnk FROM country_genre) SELECT Country, Genre, purchases FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "h15",
+    "category": "hard",
+    "question": "Find the employee whose customers have the highest average invoice value.",
+    "gold_sql": "SELECT e.FirstName, e.LastName, ROUND(AVG(i.Total), 2) AS avg_invoice FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId ORDER BY avg_invoice DESC LIMIT 1"
+  },
+  {
+    "id": "a1",
+    "category": "ambiguous",
+    "question": "For every country, which buyer is giving us the most money?",
+    "gold_sql": "WITH spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "a2",
+    "category": "ambiguous",
+    "question": "For every music type, which song is selling best?",
+    "gold_sql": "WITH sales AS (SELECT g.GenreId, g.Name AS Genre, t.TrackId, t.Name AS Track, SUM(il.Quantity) AS purchases FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY g.GenreId, t.TrackId), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY purchases DESC) AS rnk FROM sales) SELECT Genre, Track, purchases FROM ranked WHERE rnk = 1 ORDER BY Genre"
+  },
+  {
+    "id": "a3",
+    "category": "ambiguous",
+    "question": "Which worker has customers spending biggest money?",
+    "gold_sql": "SELECT e.FirstName, e.LastName, ROUND(SUM(i.Total), 2) AS Revenue FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId ORDER BY Revenue DESC LIMIT 1"
+  },
+  {
+    "id": "a4",
+    "category": "ambiguous",
+    "question": "In each place, who is the number one customer by purchase?",
+    "gold_sql": "WITH spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country"
+  },
+  {
+    "id": "a5",
+    "category": "ambiguous",
+    "question": "For each artist, give me the album which people buy maximum.",
+    "gold_sql": "WITH album_sales AS (SELECT ar.ArtistId, ar.Name AS Artist, al.AlbumId, al.Title AS Album, SUM(il.Quantity) AS Sales FROM Artist ar JOIN Album al ON al.ArtistId = ar.ArtistId JOIN Track t ON t.AlbumId = al.AlbumId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY ar.ArtistId, al.AlbumId), ranked AS (SELECT *, RANK() OVER (PARTITION BY ArtistId ORDER BY Sales DESC) AS rnk FROM album_sales) SELECT Artist, Album, Sales FROM ranked WHERE rnk = 1 ORDER BY Artist"
+  }
+]

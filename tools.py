@@ -1,16 +1,3 @@
-"""
-Two supporting pieces the graph leans on:
-
-  * `validate_sql`  — static analysis with sqlglot, run BEFORE the query hits
-                      the database. It catches syntax errors, non-SELECT
-                      statements, and hallucinated table/column names.
-  * `get_llm`       — the Groq chat model.
-
-Catching a hallucinated column here rather than at execution time is the
-difference between a useful error message ("no column Track.Duration; did you
-mean Milliseconds?") and a cryptic one. Better error text means better retries.
-"""
-
 from __future__ import annotations
 
 import os
@@ -21,59 +8,52 @@ import sqlglot
 from sqlglot import exp
 from sqlglot.errors import ParseError
 
-from db import get_schema_map
+from db import get_real_table_names, get_schema_map
 
-# Statement types the agent must never produce. The database connection is
-# already read-only, so this is defence in depth — but it also gives the
-# generator a clean, correctable error instead of a driver-level failure.
 _FORBIDDEN = (
     exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create,
     exp.Alter, exp.TruncateTable,
 )
 
-
 def extract_sql(text: str) -> str:
-    """
-    Pull raw SQL out of an LLM response.
-
-    Models wrap SQL in ```sql fences or add a sentence of preamble no matter how
-    firmly you tell them not to, so we strip that here instead of burning a
-    retry attempt on it.
-    """
+\
+\
+\
+\
+\
+\
+       
     text = text.strip()
 
     fenced = re.search(r"```(?:sql)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE)
     if fenced:
         text = fenced.group(1)
 
-    # Drop any chatter before the first SELECT / WITH.
     m = re.search(r"\b(WITH|SELECT)\b", text, re.IGNORECASE)
     if m:
         text = text[m.start():]
 
     return text.strip().rstrip(";").strip()
 
-
 def _cte_names(tree: exp.Expression) -> set[str]:
-    """Names defined by WITH clauses — these are not real tables."""
+                                                                    
     return {
         cte.alias_or_name.lower()
         for cte in tree.find_all(exp.CTE)
         if cte.alias_or_name
     }
 
-
 def validate_sql(sql: str) -> tuple[bool, str]:
-    """
-    Returns (is_valid, error_message). Empty message when valid.
-
-    Checks, in order:
-      1. parses as SQLite
-      2. exactly one statement
-      3. is a SELECT (read-only)
-      4. every referenced table exists
-      5. every referenced column exists on some referenced table
-    """
+\
+\
+\
+\
+\
+\
+\
+\
+\
+       
     if not sql.strip():
         return False, "No SQL was produced."
 
@@ -103,7 +83,6 @@ def validate_sql(sql: str) -> tuple[bool, str]:
     schema = get_schema_map()
     ctes = _cte_names(tree)
 
-    # --- 4. table existence -------------------------------------------------
     referenced: set[str] = set()
     for tbl in tree.find_all(exp.Table):
         name = tbl.name.lower()
@@ -121,15 +100,11 @@ def validate_sql(sql: str) -> tuple[bool, str]:
     if not referenced and not ctes:
         return False, "The query does not reference any table."
 
-    # --- 5. column existence ------------------------------------------------
-    # Skipped when CTEs are present: a CTE invents its own output columns, and
-    # resolving those properly needs a full binder. Being lenient there is much
-    # better than rejecting correct queries.
     if ctes:
         return True, ""
 
     allowed = {c for t in referenced for c in schema[t]}
-    # Aliases the query itself defines (SELECT ... AS foo, then ORDER BY foo).
+                                                                              
     allowed |= {
         a.alias.lower() for a in tree.find_all(exp.Alias) if a.alias
     }
@@ -143,23 +118,102 @@ def validate_sql(sql: str) -> tuple[bool, str]:
             continue
         suggestion = get_close_matches(name, sorted(allowed), n=1, cutoff=0.6)
         hint = f" Did you mean '{suggestion[0]}'?" if suggestion else ""
-        tables_txt = ", ".join(sorted(referenced))
+
+        available = []
+        for t in sorted(referenced):
+            cols = sorted(schema[t])
+            shown = ", ".join(cols[:20]) + ("..." if len(cols) > 20 else "")
+            available.append(f"{get_real_table_names().get(t, t)}({shown})")
+
         return False, (
-            f"Column '{col.name}' does not exist on the referenced "
-            f"table(s) ({tables_txt}).{hint}"
+            f"Column '{col.name}' does not exist.{hint} "
+            f"Available columns: {'; '.join(available)}"
         )
 
     return True, ""
 
+def _norm_value(v) -> str:
+                                                                       
+    if v is None:
+        return "null"
+    if isinstance(v, bool):
+        return str(v).lower()
+    if isinstance(v, (int, float)):
+        return f"{round(float(v), 2):g}"
+    return str(v).strip().lower()
+
+def _norm_rows(rows: list[dict]) -> list[tuple]:
+\
+\
+\
+\
+\
+\
+       
+    return sorted(tuple(sorted(_norm_value(v) for v in r.values())) for r in rows)
+
+def _tokens(row: dict, whole_values: bool = True) -> set[str]:
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+       
+    out: set[str] = set()
+    for v in row.values():
+        n = _norm_value(v)
+        if whole_values:
+            out.add(n)
+        parts = [p for p in n.replace(",", " ").split() if p]
+        out.update(parts)
+        if not whole_values and len(parts) == 0:
+            out.add(n)
+    return out
+
+def compare_results(expected: list[dict], actual: list[dict]) -> tuple[bool, bool]:
+\
+\
+\
+\
+\
+\
+\
+       
+    strict = _norm_rows(expected) == _norm_rows(actual)
+    if strict:
+        return True, True
+
+    if len(expected) != len(actual):
+        return False, False
+
+    remaining = [_tokens(r) for r in actual]
+    for e in expected:
+        et = _tokens(e, whole_values=False)
+        hit = next((i for i, at in enumerate(remaining) if et <= at), None)
+        if hit is None:
+            return False, False
+        remaining.pop(hit)
+
+    return False, True
 
 def get_llm(temperature: float = 0.0):
-    """
-    The Groq chat model used by both LLM nodes.
-
-    temperature=0 by default so a retry only changes behaviour because the
-    error feedback changed the prompt — not because of random sampling. That
-    makes the self-correction loop honest and reproducible.
-    """
+\
+\
+\
+\
+\
+\
+       
     from langchain_groq import ChatGroq
 
     if not os.getenv("GROQ_API_KEY"):
@@ -168,6 +222,6 @@ def get_llm(temperature: float = 0.0):
     return ChatGroq(
         model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
         temperature=temperature,
-        max_retries=2,      # network-level retries only, unrelated to the agent loop
+        max_retries=2,                                                               
         timeout=60,
     )

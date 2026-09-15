@@ -1,0 +1,18 @@
+# LLM + orchestration
+langgraph>=0.2.50
+langchain-core>=0.3.0
+langchain-groq>=0.2.0
+
+# Observability (LangSmith tracing is driven purely by env vars)
+langsmith>=0.1.100
+
+# Database access and SQL validation
+SQLAlchemy>=2.0.30
+sqlglot>=25.0.0
+
+# UI
+streamlit>=1.36.0
+pandas>=2.0.0
+
+# Config
+python-dotenv>=1.0.0
