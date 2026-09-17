@@ -87,60 +87,7 @@ s = graph.run_agent("delete everything", max_attempts=2)
 check("refused", s["status"] == "failed")
 check("named as read-only violation", "read-only" in (s["history"][0]["error"] or "").lower())
 
-print("\n8. Cross-check catches a wrong answer that no error would reveal")
-
-scripted([
-    "SELECT Name FROM Track WHERE Milliseconds > 36000",                          
-    "SELECT Name FROM Track WHERE Milliseconds > 36000000",                      
-])
-s = graph.run_agent("List any tracks longer than 10 hours", cross_check=True)
-check("primary query still ran fine", s["status"] == "success")
-check("no error was ever raised", all(h["stage"] == "success" for h in s["history"]))
-check("disagreement detected", s["agreement"] == "disagree", s["agreement"])
-check("confidence downgraded", s["confidence"] == "low")
-check("both result sets kept", len(s["rows"]) > 0 and len(s["cross_check_rows"]) == 0)
-
-print("\n9. Cross-check confirms a correct answer")
-scripted([
-    "SELECT COUNT(*) AS n FROM Customer",
-    "SELECT COUNT(CustomerId) AS total FROM Customer",                               
-])
-s = graph.run_agent("How many customers are there?", cross_check=True)
-check("agreement detected", s["agreement"] == "agree", s["agreement"])
-check("confidence high", s["confidence"] == "high")
-
-print("\n10. Different column shape is not a disagreement")
-scripted([
-    "SELECT FirstName, LastName FROM Customer WHERE CustomerId = 1",
-    "SELECT FirstName || ' ' || LastName AS Name FROM Customer WHERE CustomerId = 1",
-])
-s = graph.run_agent("Who is customer 1?", cross_check=True)
-check("still counts as agreement", s["agreement"] == "agree", s["agreement"])
-
-print("\n10b. ...and the comparison is symmetric (either column order)")
-scripted([
-    "SELECT FirstName || ' ' || LastName AS Name FROM Customer WHERE CustomerId = 1",
-    "SELECT FirstName, LastName FROM Customer WHERE CustomerId = 1",
-])
-s = graph.run_agent("Who is customer 1?", cross_check=True)
-check("agreement in the reverse order too", s["agreement"] == "agree", s["agreement"])
-
-print("\n11. A broken cross-check query is inconclusive, not a disagreement")
-scripted([
-    "SELECT COUNT(*) AS n FROM Customer",
-    "SELECT COUNT(*) FROM NoSuchTable",                                    
-])
-s = graph.run_agent("How many customers are there?", cross_check=True)
-check("marked inconclusive", s["agreement"] == "inconclusive", s["agreement"])
-check("primary answer not discarded", s["status"] == "success" and len(s["rows"]) == 1)
-
-print("\n12. Cross-check is off by default (it costs an extra call)")
-scripted(["SELECT COUNT(*) AS n FROM Customer"])
-s = graph.run_agent("How many customers are there?")
-check("skipped", s["agreement"] == "skipped")
-check("confidence unverified", s["confidence"] == "unverified")
-
-print("\n13. Grading logic")
+print("\n8. Grading logic")
 check("column split still counts as correct",
       compare([{"F": "Helena", "L": "Holy"}], [{"Name": "Helena Holy"}])[1])
 check("wrong number is not correct", not compare([{"n": 59}], [{"n": 58}])[1])

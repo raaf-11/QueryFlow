@@ -1,21 +1,23 @@
 {
   "summary": {
     "questions_attempted": 25,
-    "questions_scored": 25,
-    "crashed": 0,
-    "crashed_ids": [],
+    "questions_scored": 24,
+    "crashed": 1,
+    "crashed_ids": [
+      "a5"
+    ],
     "execution_accuracy_pct": 100.0,
-    "answer_accuracy_strict_pct": 24.0,
-    "answer_accuracy_lenient_pct": 84.0,
-    "avg_attempts": 1.16,
-    "questions_needing_retry": 4,
+    "answer_accuracy_strict_pct": 29.2,
+    "answer_accuracy_lenient_pct": 87.5,
+    "avg_attempts": 1.08,
+    "questions_needing_retry": 2,
     "retry_execution_recovery_pct": 100.0,
-    "retry_answer_recovery_pct": 75.0,
-    "avg_seconds_per_question": 14.41,
+    "retry_answer_recovery_pct": 50.0,
+    "avg_seconds_per_question": 11.53,
     "by_category": {
       "ambiguous": {
-        "n": 5,
-        "executed": 5,
+        "n": 4,
+        "executed": 4,
         "correct": 3
       },
       "easy": {
@@ -29,20 +31,12 @@
         "correct": 13
       }
     },
-    "cross_check_verified": 0,
-    "cross_check_inconclusive": 0,
-    "wrong_answers": 0,
-    "wrong_answers_flagged": 0,
-    "wrong_answers_flagged_pct": null,
-    "false_alarm_pct": null,
-    "flagged_ids": [],
     "handicap": false,
     "test_set": "eval_questions.json",
     "max_attempts": 3,
     "model": "openai/gpt-oss-120b",
     "schema_mode": "full",
-    "database": "chinook.db",
-    "cross_check": false
+    "database": "chinook.db"
   },
   "results": [
     {
@@ -70,10 +64,7 @@
           "row_count": 1
         }
       ],
-      "elapsed_s": 5.55,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 2.79
     },
     {
       "id": "e2",
@@ -100,10 +91,7 @@
           "row_count": 1
         }
       ],
-      "elapsed_s": 2.56,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 2.06
     },
     {
       "id": "e3",
@@ -113,7 +101,7 @@
       "crashed": false,
       "crash_error": null,
       "sql": "SELECT AVG(UnitPrice) AS AverageTrackPrice FROM Track",
-      "answer": "The average price of a track is 1.0508050242649156.",
+      "answer": "The average price of a track is $1.0508050242649156.",
       "executed": true,
       "strict_match": true,
       "lenient_match": true,
@@ -130,10 +118,7 @@
           "row_count": 1
         }
       ],
-      "elapsed_s": 2.33,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 2.18
     },
     {
       "id": "e4",
@@ -142,8 +127,8 @@
       "gold_sql": "SELECT g.Name FROM Genre g JOIN Track t ON t.GenreId = g.GenreId GROUP BY g.GenreId ORDER BY COUNT(t.TrackId) DESC LIMIT 1",
       "crashed": false,
       "crash_error": null,
-      "sql": "SELECT Genre, TrackCount\nFROM (\n    SELECT g.Name AS Genre,\n           COUNT(t.TrackId) AS TrackCount,\n           RANK() OVER (ORDER BY COUNT(t.TrackId) DESC) AS rnk\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name\n) sub\nWHERE rnk = 1",
-      "answer": "Rock has the most tracks, with a total of 1,297 tracks.",
+      "sql": "SELECT Genre, TrackCount FROM (SELECT g.Name AS Genre, COUNT(t.TrackId) AS TrackCount, RANK() OVER (ORDER BY COUNT(t.TrackId) DESC) AS rnk FROM Genre g JOIN Track t ON t.GenreId = g.GenreId GROUP BY g.GenreId, g.Name) sub WHERE rnk = 1",
+      "answer": "The genre with the most tracks is Rock, with 1,297 tracks.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -154,16 +139,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT Genre, TrackCount\nFROM (\n    SELECT g.Name AS Genre,\n           COUNT(t.TrackId) AS TrackCount,\n           RANK() OVER (ORDER BY COUNT(t.TrackId) DESC) AS rnk\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name\n) sub\nWHERE rnk = 1",
+          "sql": "SELECT Genre, TrackCount FROM (SELECT g.Name AS Genre, COUNT(t.TrackId) AS TrackCount, RANK() OVER (ORDER BY COUNT(t.TrackId) DESC) AS rnk FROM Genre g JOIN Track t ON t.GenreId = g.GenreId GROUP BY g.GenreId, g.Name) sub WHERE rnk = 1",
           "stage": "success",
           "error": null,
           "row_count": 1
         }
       ],
-      "elapsed_s": 2.71,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 4.55
     },
     {
       "id": "e5",
@@ -173,7 +155,7 @@
       "crashed": false,
       "crash_error": null,
       "sql": "SELECT EmployeeId, FirstName, LastName, CustomerCount\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           COUNT(c.CustomerId) AS CustomerCount,\n           RANK() OVER (ORDER BY COUNT(c.CustomerId) DESC) AS rnk\n    FROM Employee e\n    LEFT JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName\n) \nWHERE rnk = 1",
-      "answer": "Jane Peacock (Employee ID 3) supports the most customers, with a total of 21 customers.",
+      "answer": "Jane Peacock (Employee ID 3) supports the most customers, with 21 customers.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -190,10 +172,7 @@
           "row_count": 1
         }
       ],
-      "elapsed_s": 5.87,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 2.77
     },
     {
       "id": "h1",
@@ -202,8 +181,8 @@
       "gold_sql": "WITH customer_spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM customer_spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH cust_spending AS (\n  SELECT c.CustomerId,\n         c.Country,\n         c.FirstName,\n         c.LastName,\n         SUM(i.Total) AS AmountSpent\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY c.CustomerId, c.Country, c.FirstName, c.LastName\n)\nSELECT Country,\n       FirstName || ' ' || LastName AS CustomerName,\n       AmountSpent\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY AmountSpent DESC) AS rnk\n  FROM cust_spending\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
-      "answer": "The query returns the top‑spending customer for each country—for example, Argentina – Diego Gutiérrez (37.62), Australia – Mark Taylor (37.62), Chile – Luis Rojas (46.62), USA – Richard Cunningham (47.62), etc., and the United Kingdom has a tie between Emma Jones and Phil Hughes, each with 37.62. One additional country row is not shown in the excerpt.",
+      "sql": "SELECT \n    Country, \n    FirstName || ' ' || LastName AS CustomerName, \n    TotalSpent AS AmountSpent\nFROM (\n    SELECT \n        c.Country,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    GROUP BY c.CustomerId, c.Country, c.FirstName, c.LastName\n) \nWHERE rnk = 1",
+      "answer": "The query returns the highest‑spending customer for each country—for example, Argentina’s top spender is Diego Gutiérrez with 37.62, Australia’s is Mark Taylor with 37.62, Austria’s is Astrid Gruber with 42.62, Belgium’s is Daan Peeters with 37.62, Brazil’s is Luís Gonçalves with 39.62, Canada’s is François Tremblay with 39.62, Chile’s is Luis Rojas with 46.62, Czech Republic’s is Helena Holý with 49.62, Denmark’s is Kara Nielsen with 37.62, Finland’s is Terhi Hämäläinen with 41.62, France’s is Isabelle Mercier with 40.62, Germany’s is Fynn Zimmermann with 43.62, Hungary’s is Ladislav Kovács with 45.62, India’s is Manoj Pareek with 38.62, Ireland’s is Hugh O'Reilly with 45.62, Italy’s is Lucas Mancini with 37.62, Netherlands’ is Johannes Van der Berg with 40.62, Norway’s is Bjørn Hansen with 39.62, Poland’s is Stanisław Wójcik with 37.62, Portugal’s is João Fernandes with 39.62, Spain’s is Enrique Muñoz with 37.62, Sweden’s is Joakim Johansson with 38.62, USA’s is Richard Cunningham with 47.62, and the United Kingdom has a tie: Emma Jones and Phil Hughes each spent 37.62 (one additional row not shown).",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -214,16 +193,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH cust_spending AS (\n  SELECT c.CustomerId,\n         c.Country,\n         c.FirstName,\n         c.LastName,\n         SUM(i.Total) AS AmountSpent\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY c.CustomerId, c.Country, c.FirstName, c.LastName\n)\nSELECT Country,\n       FirstName || ' ' || LastName AS CustomerName,\n       AmountSpent\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY AmountSpent DESC) AS rnk\n  FROM cust_spending\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
+          "sql": "SELECT \n    Country, \n    FirstName || ' ' || LastName AS CustomerName, \n    TotalSpent AS AmountSpent\nFROM (\n    SELECT \n        c.Country,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    GROUP BY c.CustomerId, c.Country, c.FirstName, c.LastName\n) \nWHERE rnk = 1",
           "stage": "success",
           "error": null,
           "row_count": 26
         }
       ],
-      "elapsed_s": 5.39,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 4.54
     },
     {
       "id": "h2",
@@ -232,11 +208,11 @@
       "gold_sql": "WITH track_sales AS (SELECT g.GenreId, g.Name AS Genre, t.TrackId, t.Name AS Track, SUM(il.Quantity) AS purchases FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY g.GenreId, t.TrackId), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY purchases DESC) AS rnk FROM track_sales) SELECT Genre, Track, purchases FROM ranked WHERE rnk = 1 ORDER BY Genre",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH TrackPurchases AS (\n    SELECT \n        g.GenreId,\n        g.Name AS Genre,\n        t.TrackId,\n        t.Name AS TrackName,\n        COALESCE(SUM(il.Quantity), 0) AS Purchases\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    LEFT JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n)\nSELECT \n    Genre,\n    TrackName,\n    Purchases\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY GenreId ORDER BY Purchases DESC) AS rnk\n    FROM TrackPurchases\n) ranked\nWHERE rnk = 1\nORDER BY Genre",
-      "answer": "The query shows that the highest‑purchased tracks in the **Alternative** genre each have 1 purchase (e.g., “Say Hello 2 Heaven”, “Call Me a Dog”, “Four Walled World”, etc.), while the top tracks in **Alternative & Punk** each have 2 purchases (e.g., “Bowels Of The Devil”, “Voodoo”, “Basket Case”, etc.). All other genres return similar “most‑purchased” rows (one or more tracks tied for the maximum purchase count) as indicated by the remaining 175 rows.",
+      "sql": "SELECT Genre, Track, PurchaseCount\nFROM (\n    SELECT g.Name AS Genre,\n           t.Name AS Track,\n           SUM(il.Quantity) AS PurchaseCount,\n           RANK() OVER (PARTITION BY g.GenreId ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM InvoiceLine il\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n) sub\nWHERE rnk = 1\nORDER BY Genre",
+      "answer": "The query returns the highest‑selling track(s) for each genre – for “Alternative” the top purchase count is 1, with tracks such as Say Hello 2 Heaven, Call Me a Dog, Four Walled World, All Night Thing, Safe and Sound, Billie Jean, Scar On the Sky, Disappearing Act, Sound of a Gun, Until We Fall, Shape of Things to Come, Moth, Show Me How to Live (Live at the Quart Festival) and Slowness each bought once; for “Alternative & Punk” the top count is 2, with tracks such as Bowels Of The Devil, Voodoo, Basket Case, When I Come Around, Nice Guys Finish Last, Ando Meio Desligado, Last Cup Of Sorrow, She Loves Me Not, Caffeine, Midlife Crisis and Easy each bought twice; additional genres also have their own top‑selling tracks (175 more rows not shown).",
       "executed": true,
-      "strict_match": false,
-      "lenient_match": false,
+      "strict_match": true,
+      "lenient_match": true,
       "attempts": 1,
       "first_attempt_failed": false,
       "gold_row_count": 200,
@@ -244,16 +220,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH TrackPurchases AS (\n    SELECT \n        g.GenreId,\n        g.Name AS Genre,\n        t.TrackId,\n        t.Name AS TrackName,\n        COALESCE(SUM(il.Quantity), 0) AS Purchases\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    LEFT JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n)\nSELECT \n    Genre,\n    TrackName,\n    Purchases\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY GenreId ORDER BY Purchases DESC) AS rnk\n    FROM TrackPurchases\n) ranked\nWHERE rnk = 1\nORDER BY Genre",
+          "sql": "SELECT Genre, Track, PurchaseCount\nFROM (\n    SELECT g.Name AS Genre,\n           t.Name AS Track,\n           SUM(il.Quantity) AS PurchaseCount,\n           RANK() OVER (PARTITION BY g.GenreId ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM InvoiceLine il\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n) sub\nWHERE rnk = 1\nORDER BY Genre",
           "stage": "success",
           "error": null,
           "row_count": 200
         }
       ],
-      "elapsed_s": 4.56,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 4.11
     },
     {
       "id": "h3",
@@ -262,8 +235,8 @@
       "gold_sql": "WITH employee_country_revenue AS (SELECT c.Country, e.EmployeeId, e.FirstName, e.LastName, SUM(i.Total) AS Revenue FROM Customer c JOIN Employee e ON e.EmployeeId = c.SupportRepId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, e.EmployeeId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Revenue DESC) AS rnk FROM employee_country_revenue) SELECT Country, FirstName, LastName, ROUND(Revenue, 2) AS Revenue FROM ranked WHERE rnk = 1 ORDER BY Country",
       "crashed": false,
       "crash_error": null,
-      "sql": "SELECT Country, EmployeeId, FirstName, LastName, Revenue\nFROM (\n    SELECT c.Country,\n           e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS Revenue,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Employee e ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.Country, e.EmployeeId, e.FirstName, e.LastName\n) sub\nWHERE rnk = 1\nORDER BY Country",
-      "answer": "For each country the employee with the highest customer revenue is: Margaret Park in Argentina, Australia, Belgium, Denmark, Poland ($37.62 each), Norway ($39.62), Portugal ($77.24) and the USA ($239.72); Jane Peacock in Brazil ($77.24), Canada ($191.10), Finland ($41.62), France ($80.24), Germany ($81.24), Hungary ($45.62), India ($75.26), Ireland ($45.62) and the United Kingdom ($75.24); and Steve Johnson in Austria ($42.62), Chile ($46.62), Czech Republic ($49.62), Italy ($37.62), Netherlands ($40.62), Spain ($37.62) and Sweden ($38.62).",
+      "sql": "WITH emp_rev AS (\n  SELECT c.Country,\n         e.EmployeeId,\n         e.FirstName,\n         e.LastName,\n         SUM(i.Total) AS Revenue\n  FROM Customer c\n  JOIN Employee e ON c.SupportRepId = e.EmployeeId\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY c.Country, e.EmployeeId, e.FirstName, e.LastName\n)\nSELECT Country,\n       EmployeeId,\n       FirstName,\n       LastName,\n       Revenue\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY Revenue DESC) AS rnk\n  FROM emp_rev\n) t\nWHERE rnk = 1\nORDER BY Country",
+      "answer": "Argentina – Margaret Park ($37.62); Australia – Margaret Park ($37.62); Austria – Steve Johnson ($42.62); Belgium – Margaret Park ($37.62); Brazil – Jane Peacock ($77.24); Canada – Jane Peacock ($191.10); Chile – Steve Johnson ($46.62); Czech Republic – Steve Johnson ($49.62); Denmark – Margaret Park ($37.62); Finland – Jane Peacock ($41.62); France – Jane Peacock ($80.24); Germany – Jane Peacock ($81.24); Hungary – Jane Peacock ($45.62); India – Jane Peacock ($75.26); Ireland – Jane Peacock ($45.62); Italy – Steve Johnson ($37.62); Netherlands – Steve Johnson ($40.62); Norway – Margaret Park ($39.62); Poland – Margaret Park ($37.62); Portugal – Margaret Park ($77.24); Spain – Steve Johnson ($37.62); Sweden – Steve Johnson ($38.62); USA – Margaret Park ($239.72); United Kingdom – Jane Peacock ($75.24).",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -274,16 +247,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT Country, EmployeeId, FirstName, LastName, Revenue\nFROM (\n    SELECT c.Country,\n           e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS Revenue,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Employee e ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.Country, e.EmployeeId, e.FirstName, e.LastName\n) sub\nWHERE rnk = 1\nORDER BY Country",
+          "sql": "WITH emp_rev AS (\n  SELECT c.Country,\n         e.EmployeeId,\n         e.FirstName,\n         e.LastName,\n         SUM(i.Total) AS Revenue\n  FROM Customer c\n  JOIN Employee e ON c.SupportRepId = e.EmployeeId\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY c.Country, e.EmployeeId, e.FirstName, e.LastName\n)\nSELECT Country,\n       EmployeeId,\n       FirstName,\n       LastName,\n       Revenue\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY Revenue DESC) AS rnk\n  FROM emp_rev\n) t\nWHERE rnk = 1\nORDER BY Country",
           "stage": "success",
           "error": null,
           "row_count": 24
         }
       ],
-      "elapsed_s": 4.67,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 14.33
     },
     {
       "id": "h4",
@@ -292,8 +262,8 @@
       "gold_sql": "WITH album_sales AS (SELECT ar.ArtistId, ar.Name AS Artist, al.AlbumId, al.Title AS Album, SUM(il.Quantity) AS Sales FROM Artist ar JOIN Album al ON al.ArtistId = ar.ArtistId JOIN Track t ON t.AlbumId = al.AlbumId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY ar.ArtistId, al.AlbumId), ranked AS (SELECT *, RANK() OVER (PARTITION BY ArtistId ORDER BY Sales DESC) AS rnk FROM album_sales) SELECT Artist, Album, Sales FROM ranked WHERE rnk = 1 ORDER BY Artist",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH AlbumSales AS (\n    SELECT \n        a.ArtistId,\n        a.Name AS Artist,\n        al.AlbumId,\n        al.Title AS Album,\n        SUM(il.Quantity) AS TracksSold\n    FROM Artist a\n    JOIN Album al ON al.ArtistId = a.ArtistId\n    JOIN Track t ON t.AlbumId = al.AlbumId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY a.ArtistId, a.Name, al.AlbumId, al.Title\n)\nSELECT \n    Artist,\n    Album,\n    TracksSold\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY ArtistId ORDER BY TracksSold DESC) AS rnk\n    FROM AlbumSales\n) ranked\nWHERE rnk = 1\nORDER BY Artist",
-      "answer": "The query returns one row per artist showing the album with the highest total tracks sold and the exact sales count – for example, AC/DC’s “For Those About To Rock We Salute You” sold 10, Aerosmith’s “Big Ones” sold 10, Amy Winehouse’s “Back to Black” sold 12, Antônio Carlos Jobim’s “Chill: Brazil (Disc 2)” sold 15, and Battlestar Galactica (Classic)’s “Season 1” sold 18, with similar results for all other artists in the database.",
+      "sql": "SELECT a.Name AS Artist, al.Title AS Album, il.TotalTracksSold\nFROM (\n    SELECT ar.ArtistId,\n           al.AlbumId,\n           SUM(il.Quantity) AS TotalTracksSold,\n           RANK() OVER (PARTITION BY ar.ArtistId ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM InvoiceLine il\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    JOIN Artist ar ON al.ArtistId = ar.ArtistId\n    GROUP BY ar.ArtistId, al.AlbumId\n) il\nJOIN Artist a ON il.ArtistId = a.ArtistId\nJOIN Album al ON il.AlbumId = al.AlbumId\nWHERE il.rnk = 1\nORDER BY a.Name",
+      "answer": "The query returns each artist’s top‑selling album together with the total number of tracks purchased—for example, AC/DC’s best‑selling album is **“For Those About To Rock We Salute You”** with **10** tracks sold, Aerosmith’s is **“Big Ones”** with **10**, Amy Winehouse’s is **“Back to Black”** with **12**, and Antônio Carlos Jobim’s is **“Chill: Brazil (Disc 2)”** with **15**. All other artists are listed similarly in the result set with their respective album titles and exact sales figures.",
       "executed": true,
       "strict_match": true,
       "lenient_match": true,
@@ -304,16 +274,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH AlbumSales AS (\n    SELECT \n        a.ArtistId,\n        a.Name AS Artist,\n        al.AlbumId,\n        al.Title AS Album,\n        SUM(il.Quantity) AS TracksSold\n    FROM Artist a\n    JOIN Album al ON al.ArtistId = a.ArtistId\n    JOIN Track t ON t.AlbumId = al.AlbumId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY a.ArtistId, a.Name, al.AlbumId, al.Title\n)\nSELECT \n    Artist,\n    Album,\n    TracksSold\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY ArtistId ORDER BY TracksSold DESC) AS rnk\n    FROM AlbumSales\n) ranked\nWHERE rnk = 1\nORDER BY Artist",
+          "sql": "SELECT a.Name AS Artist, al.Title AS Album, il.TotalTracksSold\nFROM (\n    SELECT ar.ArtistId,\n           al.AlbumId,\n           SUM(il.Quantity) AS TotalTracksSold,\n           RANK() OVER (PARTITION BY ar.ArtistId ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM InvoiceLine il\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    JOIN Artist ar ON al.ArtistId = ar.ArtistId\n    GROUP BY ar.ArtistId, al.AlbumId\n) il\nJOIN Artist a ON il.ArtistId = a.ArtistId\nJOIN Album al ON il.AlbumId = al.AlbumId\nWHERE il.rnk = 1\nORDER BY a.Name",
           "stage": "success",
           "error": null,
           "row_count": 176
         }
       ],
-      "elapsed_s": 11.06,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 15.97
     },
     {
       "id": "h5",
@@ -322,8 +289,8 @@
       "gold_sql": "WITH customer_yearly AS (SELECT strftime('%Y', i.InvoiceDate) AS year, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Invoice i JOIN Customer c ON c.CustomerId = i.CustomerId GROUP BY year, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY year ORDER BY Spent DESC) AS rnk FROM customer_yearly) SELECT year, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY year",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH yearly_spending AS (\n    SELECT strftime('%Y', i.InvoiceDate) AS Year,\n           c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           SUM(i.Total) AS TotalSpent\n    FROM Invoice i\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    GROUP BY Year, c.CustomerId\n)\nSELECT Year,\n       CustomerId,\n       FirstName,\n       LastName,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (PARTITION BY Year ORDER BY TotalSpent DESC) AS rnk\n    FROM yearly_spending\n) AS ranked\nWHERE rnk = 1\nORDER BY Year",
-      "answer": "The top spenders were Leonie Köhler, Tim Goyer and Dominique Lefebvre (each $24.75) in 2009; Ladislav Kovács ($32.75) in 2010; Hugh O'Reilly ($32.75) in 2011; Richard Cunningham ($25.84) in 2012; and Helena Holý ($27.84) in 2013.",
+      "sql": "WITH yearly_spending AS (\n    SELECT \n        strftime('%Y', i.InvoiceDate) AS Year,\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent\n    FROM Invoice i\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    GROUP BY Year, c.CustomerId\n)\nSELECT \n    Year,\n    CustomerId,\n    FirstName,\n    LastName,\n    TotalSpent\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY Year ORDER BY TotalSpent DESC) AS rnk\n    FROM yearly_spending\n) sub\nWHERE rnk = 1\nORDER BY Year",
+      "answer": "The top spenders were Leonie Köhler, Tim Goyer and Dominique Lefebvre, each spending $24.75 in 2009; Ladislav Kovács spent $32.75 in 2010; Hugh O'Reilly spent $32.75 in 2011; Richard Cunningham spent $25.84 in 2012; and Helena Holý spent $27.84 in 2013.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -334,16 +301,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH yearly_spending AS (\n    SELECT strftime('%Y', i.InvoiceDate) AS Year,\n           c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           SUM(i.Total) AS TotalSpent\n    FROM Invoice i\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    GROUP BY Year, c.CustomerId\n)\nSELECT Year,\n       CustomerId,\n       FirstName,\n       LastName,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (PARTITION BY Year ORDER BY TotalSpent DESC) AS rnk\n    FROM yearly_spending\n) AS ranked\nWHERE rnk = 1\nORDER BY Year",
+          "sql": "WITH yearly_spending AS (\n    SELECT \n        strftime('%Y', i.InvoiceDate) AS Year,\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent\n    FROM Invoice i\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    GROUP BY Year, c.CustomerId\n)\nSELECT \n    Year,\n    CustomerId,\n    FirstName,\n    LastName,\n    TotalSpent\nFROM (\n    SELECT \n        *,\n        RANK() OVER (PARTITION BY Year ORDER BY TotalSpent DESC) AS rnk\n    FROM yearly_spending\n) sub\nWHERE rnk = 1\nORDER BY Year",
           "stage": "success",
           "error": null,
           "row_count": 7
         }
       ],
-      "elapsed_s": 13.88,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 12.08
     },
     {
       "id": "h6",
@@ -352,8 +316,8 @@
       "gold_sql": "WITH customer_tracks AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT il.TrackId) AS tracks FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY tracks DESC) AS rnk FROM customer_tracks) SELECT Country, FirstName, LastName, tracks FROM ranked WHERE rnk = 1 ORDER BY Country",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH CustomerTrackCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         c.Country,\n         COUNT(DISTINCT il.TrackId) AS DistinctTrackCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\nCountryMax AS (\n  SELECT Country, MAX(DistinctTrackCount) AS MaxTrackCount\n  FROM CustomerTrackCounts\n  GROUP BY Country\n)\nSELECT ctc.CustomerId,\n       ctc.FirstName,\n       ctc.LastName,\n       ctc.Country,\n       ctc.DistinctTrackCount AS TrackCount\nFROM CustomerTrackCounts ctc\nJOIN CountryMax cm\n  ON cm.Country = ctc.Country\n AND cm.MaxTrackCount = ctc.DistinctTrackCount\nORDER BY ctc.Country",
-      "answer": "The highest number of different tracks bought by any customer in each country is 38, and several customers tie for that top count in each nation (e.g., Diego Gutiérrez in Argentina, Mark Taylor in Australia, Astrid Gruber in Austria, Daan Peeters in Belgium, Luís Gonçalves, Eduardo Martins, Alexandre Rocha, Roberto Almeida and Fernanda Ramos in Brazil, etc.).",
+      "sql": "WITH CustomerTrackCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         c.Country,\n         COUNT(DISTINCT il.TrackId) AS DistinctTrackCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n)\nSELECT Country,\n       CustomerId,\n       FirstName,\n       LastName,\n       DistinctTrackCount\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY DistinctTrackCount DESC) AS rnk\n  FROM CustomerTrackCounts\n) t\nWHERE rnk = 1\nORDER BY Country",
+      "answer": "The highest number of different tracks bought by any customer in each country is 38; for example, Argentina’s top buyer is Diego Gutiérrez (Customer 56), Australia’s is Mark Taylor (55), Austria’s is Astrid Gruber (7), Belgium’s is Daan Peeters (8), Brazil’s top buyers include Luís Gonçalves (1), Eduardo Martins (10), Alexandre Rocha (11), Roberto Almeida (12), Fernanda Ramos (13), and Canada’s top buyers include François Tremblay (3), Mark Philips (14), Jennifer Peterson (15), Robert Brown (29), Edward Francis (30), Martha Silk (31), Aaron Mitchell (32), Ellie Sullivan (33). All listed countries have one or more customers tied at this maximum of 38 distinct tracks.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -364,16 +328,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH CustomerTrackCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         c.Country,\n         COUNT(DISTINCT il.TrackId) AS DistinctTrackCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\nCountryMax AS (\n  SELECT Country, MAX(DistinctTrackCount) AS MaxTrackCount\n  FROM CustomerTrackCounts\n  GROUP BY Country\n)\nSELECT ctc.CustomerId,\n       ctc.FirstName,\n       ctc.LastName,\n       ctc.Country,\n       ctc.DistinctTrackCount AS TrackCount\nFROM CustomerTrackCounts ctc\nJOIN CountryMax cm\n  ON cm.Country = ctc.Country\n AND cm.MaxTrackCount = ctc.DistinctTrackCount\nORDER BY ctc.Country",
+          "sql": "WITH CustomerTrackCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         c.Country,\n         COUNT(DISTINCT il.TrackId) AS DistinctTrackCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n)\nSELECT Country,\n       CustomerId,\n       FirstName,\n       LastName,\n       DistinctTrackCount\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY Country ORDER BY DistinctTrackCount DESC) AS rnk\n  FROM CustomerTrackCounts\n) t\nWHERE rnk = 1\nORDER BY Country",
           "stage": "success",
           "error": null,
           "row_count": 58
         }
       ],
-      "elapsed_s": 12.54,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 9.6
     },
     {
       "id": "h7",
@@ -382,8 +343,8 @@
       "gold_sql": "WITH employee_country AS (SELECT e.EmployeeId, e.FirstName, e.LastName, c.Country, SUM(i.Total) AS Revenue FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId, c.Country), ranked AS (SELECT *, RANK() OVER (PARTITION BY EmployeeId ORDER BY Revenue DESC) AS rnk FROM employee_country) SELECT FirstName, LastName, Country, ROUND(Revenue, 2) AS Revenue FROM ranked WHERE rnk = 1 ORDER BY EmployeeId",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH emp_country_sales AS (\n  SELECT e.EmployeeId,\n         e.FirstName,\n         e.LastName,\n         c.Country,\n         SUM(i.Total) AS TotalSpent\n  FROM Employee e\n  JOIN Customer c ON c.SupportRepId = e.EmployeeId\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY e.EmployeeId, e.FirstName, e.LastName, c.Country\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       Country,\n       TotalSpent\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY EmployeeId ORDER BY TotalSpent DESC) AS rnk\n  FROM emp_country_sales\n) sub\nWHERE rnk = 1\nORDER BY EmployeeId",
-      "answer": "Jane Peacock’s customers spent the most in Canada, with total sales of 191.10. Margaret Park’s customers spent the most in the USA, with total sales of 239.72. Steve Johnson’s customers also spent the most in the USA, with total sales of 163.48.",
+      "sql": "WITH spend AS (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           c.Country,\n           SUM(i.Total) AS TotalSpent\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName, c.Country\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       Country,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (PARTITION BY EmployeeId ORDER BY TotalSpent DESC) AS rnk\n    FROM spend\n) t\nWHERE rnk = 1\nORDER BY EmployeeId",
+      "answer": "Jane Peacock (Employee 3) – Canada, with customers spending $191.10.  \nMargaret Park (Employee 4) – USA, with customers spending $239.72.  \nSteve Johnson (Employee 5) – USA, with customers spending $163.48.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -394,16 +355,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH emp_country_sales AS (\n  SELECT e.EmployeeId,\n         e.FirstName,\n         e.LastName,\n         c.Country,\n         SUM(i.Total) AS TotalSpent\n  FROM Employee e\n  JOIN Customer c ON c.SupportRepId = e.EmployeeId\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  GROUP BY e.EmployeeId, e.FirstName, e.LastName, c.Country\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       Country,\n       TotalSpent\nFROM (\n  SELECT *,\n         RANK() OVER (PARTITION BY EmployeeId ORDER BY TotalSpent DESC) AS rnk\n  FROM emp_country_sales\n) sub\nWHERE rnk = 1\nORDER BY EmployeeId",
+          "sql": "WITH spend AS (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           c.Country,\n           SUM(i.Total) AS TotalSpent\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName, c.Country\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       Country,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (PARTITION BY EmployeeId ORDER BY TotalSpent DESC) AS rnk\n    FROM spend\n) t\nWHERE rnk = 1\nORDER BY EmployeeId",
           "stage": "success",
           "error": null,
           "row_count": 3
         }
       ],
-      "elapsed_s": 13.3,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 10.78
     },
     {
       "id": "h8",
@@ -412,8 +370,8 @@
       "gold_sql": "WITH customer_spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), country_avg AS (SELECT Country, AVG(Spent) AS avg_spent FROM customer_spending GROUP BY Country) SELECT cs.Country, cs.FirstName, cs.LastName, ROUND(cs.Spent, 2) AS Spent FROM customer_spending cs JOIN country_avg ca ON ca.Country = cs.Country WHERE cs.Spent > ca.avg_spent ORDER BY cs.Country, Spent DESC",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH cust_spending AS (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           COALESCE(SUM(i.Total), 0) AS TotalSpent\n    FROM Customer c\n    LEFT JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\ncountry_avg AS (\n    SELECT Country,\n           AVG(TotalSpent) AS AvgSpent\n    FROM cust_spending\n    GROUP BY Country\n)\nSELECT cs.CustomerId,\n       cs.FirstName,\n       cs.LastName,\n       cs.Country,\n       cs.TotalSpent\nFROM cust_spending cs\nJOIN country_avg ca ON cs.Country = ca.Country\nWHERE cs.TotalSpent > ca.AvgSpent\nORDER BY cs.Country, cs.TotalSpent DESC",
-      "answer": "The customers who spent more than the average amount for their own country are: Luís Gonçalves (Brazil) – $39.62; François Tremblay (Canada) – $39.62; Jennifer Peterson (Canada) – $38.62; Helena Holý (Czech Republic) – $49.62; Isabelle Mercier (France) – $40.62; Wyatt Girard (France) – $39.62; Fynn Zimmermann (Germany) – $43.62; Manoj Pareek (India) – $38.62; João Fernandes (Portugal) – $39.62; Richard Cunningham (USA) – $47.62; Frank Ralston (USA) – $43.62; Julia Barnett (USA) – $43.62; Victor Stevens (USA) – $42.62.",
+      "sql": "SELECT t.CustomerId, t.FirstName, t.LastName, t.Country, t.TotalSpent, t.AvgCountrySpent\nFROM (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           cs.TotalSpent,\n           AVG(cs.TotalSpent) OVER (PARTITION BY c.Country) AS AvgCountrySpent\n    FROM (\n        SELECT CustomerId, SUM(Total) AS TotalSpent\n        FROM Invoice\n        GROUP BY CustomerId\n    ) cs\n    JOIN Customer c ON cs.CustomerId = c.CustomerId\n) t\nWHERE t.TotalSpent > t.AvgCountrySpent\nORDER BY t.TotalSpent DESC\nLIMIT 100",
+      "answer": "The customers who spent more than the average for their own country are: Helena Holý (Czech Republic) – 49.62; Richard Cunningham (USA) – 47.62; Fynn Zimmermann (Germany) – 43.62; Frank Ralston (USA) – 43.62; Julia Barnett (USA) – 43.62; Victor Stevens (USA) – 42.62; Isabelle Mercier (France) – 40.62; Luís Gonçalves (Brazil) – 39.62; François Tremblay (Canada) – 39.62; Wyatt Girard (France) – 39.62; João Fernandes (Portugal) – 39.62; Jennifer Peterson (Canada) – 38.62; and Manoj Pareek (India) – 38.62.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -424,16 +382,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH cust_spending AS (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           COALESCE(SUM(i.Total), 0) AS TotalSpent\n    FROM Customer c\n    LEFT JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\ncountry_avg AS (\n    SELECT Country,\n           AVG(TotalSpent) AS AvgSpent\n    FROM cust_spending\n    GROUP BY Country\n)\nSELECT cs.CustomerId,\n       cs.FirstName,\n       cs.LastName,\n       cs.Country,\n       cs.TotalSpent\nFROM cust_spending cs\nJOIN country_avg ca ON cs.Country = ca.Country\nWHERE cs.TotalSpent > ca.AvgSpent\nORDER BY cs.Country, cs.TotalSpent DESC",
+          "sql": "SELECT t.CustomerId, t.FirstName, t.LastName, t.Country, t.TotalSpent, t.AvgCountrySpent\nFROM (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           cs.TotalSpent,\n           AVG(cs.TotalSpent) OVER (PARTITION BY c.Country) AS AvgCountrySpent\n    FROM (\n        SELECT CustomerId, SUM(Total) AS TotalSpent\n        FROM Invoice\n        GROUP BY CustomerId\n    ) cs\n    JOIN Customer c ON cs.CustomerId = c.CustomerId\n) t\nWHERE t.TotalSpent > t.AvgCountrySpent\nORDER BY t.TotalSpent DESC\nLIMIT 100",
           "stage": "success",
           "error": null,
           "row_count": 13
         }
       ],
-      "elapsed_s": 14.81,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 16.53
     },
     {
       "id": "h9",
@@ -442,11 +397,11 @@
       "gold_sql": "WITH artist_playlist AS (SELECT p.PlaylistId, p.Name AS Playlist, ar.ArtistId, ar.Name AS Artist, COUNT(*) AS track_count FROM Playlist p JOIN PlaylistTrack pt ON pt.PlaylistId = p.PlaylistId JOIN Track t ON t.TrackId = pt.TrackId JOIN Album al ON al.AlbumId = t.AlbumId JOIN Artist ar ON ar.ArtistId = al.ArtistId GROUP BY p.PlaylistId, ar.ArtistId), ranked AS (SELECT *, RANK() OVER (PARTITION BY PlaylistId ORDER BY track_count DESC) AS rnk FROM artist_playlist) SELECT Playlist, Artist, track_count FROM ranked WHERE rnk = 1 ORDER BY Playlist",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH ArtistCounts AS (\n    SELECT pt.PlaylistId, al.ArtistId, COUNT(*) AS TrackCount\n    FROM PlaylistTrack pt\n    JOIN Track t ON pt.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    GROUP BY pt.PlaylistId, al.ArtistId\n)\nSELECT p.PlaylistId,\n       p.Name AS PlaylistName,\n       ar.ArtistId,\n       ar.Name AS ArtistName,\n       ac.TrackCount\nFROM (\n    SELECT ac.*,\n           RANK() OVER (PARTITION BY PlaylistId ORDER BY TrackCount DESC) AS rnk\n    FROM ArtistCounts ac\n) ac\nJOIN Playlist p ON ac.PlaylistId = p.PlaylistId\nJOIN Artist ar ON ac.ArtistId = ar.ArtistId\nWHERE ac.rnk = 1\nORDER BY p.PlaylistId",
-      "answer": "The most‑frequent artist for each playlist is: Playlist 1 (Music) – Iron Maiden with 213 tracks; Playlist 3 (TV Shows) – Lost with 92 tracks; Playlist 5 (90’s Music) – Iron Maiden with 84 tracks; Playlist 8 (Music) – Iron Maiden with 213 tracks; Playlist 9 (Music Videos) – Audioslave with 1 track; Playlist 10 (TV Shows) – Lost with 92 tracks; Playlist 11 (Brazilian Music) – Tim Maia with 7 tracks; Playlist 12 (Classical) – a tie between Eugene Ormandy and Berliner Philharmoniker & Herbert Von Karajan, each with 3 tracks; and Playlist 13 (Classical 101 – Deep Cuts) – a tie among many artists, each appearing once.",
+      "sql": "SELECT p.PlaylistId,\n       p.Name AS PlaylistName,\n       ar.ArtistId,\n       ar.Name AS ArtistName,\n       sub.cnt AS TrackCount\nFROM (\n    SELECT pt.PlaylistId,\n           al.ArtistId,\n           COUNT(*) AS cnt,\n           RANK() OVER (PARTITION BY pt.PlaylistId ORDER BY COUNT(*) DESC) AS rnk\n    FROM PlaylistTrack pt\n    JOIN Track t ON pt.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    GROUP BY pt.PlaylistId, al.ArtistId\n) sub\nJOIN Playlist p ON sub.PlaylistId = p.PlaylistId\nJOIN Artist ar ON sub.ArtistId = ar.ArtistId\nWHERE sub.rnk = 1\nORDER BY p.PlaylistId",
+      "answer": "The query returns the most‑frequent artist for each playlist—for example, Iron Maiden appears 213 times in Playlist 1 “Music”, Lost appears 92 times in Playlist 3 “TV Shows”, Iron Maiden appears 84 times in Playlist 5 “90’s Music”, Audioslave appears once in Playlist 9 “Music Videos”, Tim Maia appears 7 times in Playlist 11 “Brazilian Music”, and several artists each appear once in Playlist 13 “Classical 101 – Deep Cuts”. (All other playlists are listed similarly in the result set.)",
       "executed": true,
       "strict_match": false,
-      "lenient_match": true,
+      "lenient_match": false,
       "attempts": 1,
       "first_attempt_failed": false,
       "gold_row_count": 65,
@@ -454,16 +409,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH ArtistCounts AS (\n    SELECT pt.PlaylistId, al.ArtistId, COUNT(*) AS TrackCount\n    FROM PlaylistTrack pt\n    JOIN Track t ON pt.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    GROUP BY pt.PlaylistId, al.ArtistId\n)\nSELECT p.PlaylistId,\n       p.Name AS PlaylistName,\n       ar.ArtistId,\n       ar.Name AS ArtistName,\n       ac.TrackCount\nFROM (\n    SELECT ac.*,\n           RANK() OVER (PARTITION BY PlaylistId ORDER BY TrackCount DESC) AS rnk\n    FROM ArtistCounts ac\n) ac\nJOIN Playlist p ON ac.PlaylistId = p.PlaylistId\nJOIN Artist ar ON ac.ArtistId = ar.ArtistId\nWHERE ac.rnk = 1\nORDER BY p.PlaylistId",
+          "sql": "SELECT p.PlaylistId,\n       p.Name AS PlaylistName,\n       ar.ArtistId,\n       ar.Name AS ArtistName,\n       sub.cnt AS TrackCount\nFROM (\n    SELECT pt.PlaylistId,\n           al.ArtistId,\n           COUNT(*) AS cnt,\n           RANK() OVER (PARTITION BY pt.PlaylistId ORDER BY COUNT(*) DESC) AS rnk\n    FROM PlaylistTrack pt\n    JOIN Track t ON pt.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    GROUP BY pt.PlaylistId, al.ArtistId\n) sub\nJOIN Playlist p ON sub.PlaylistId = p.PlaylistId\nJOIN Artist ar ON sub.ArtistId = ar.ArtistId\nWHERE sub.rnk = 1\nORDER BY p.PlaylistId",
           "stage": "success",
           "error": null,
           "row_count": 65
         }
       ],
-      "elapsed_s": 17.61,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 14.55
     },
     {
       "id": "h10",
@@ -472,8 +424,8 @@
       "gold_sql": "WITH genre_country AS (SELECT g.GenreId, g.Name AS Genre, c.Country, SUM(il.Quantity) AS tracks FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId JOIN Invoice i ON i.InvoiceId = il.InvoiceId JOIN Customer c ON c.CustomerId = i.CustomerId GROUP BY g.GenreId, c.Country), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY tracks DESC) AS rnk FROM genre_country) SELECT Genre, Country, tracks FROM ranked WHERE rnk = 1 ORDER BY Genre",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH genre_country_sales AS (\n    SELECT \n        g.GenreId,\n        g.Name AS Genre,\n        c.Country,\n        SUM(il.Quantity) AS TracksSold\n    FROM InvoiceLine il\n    JOIN Invoice i ON il.InvoiceId = i.InvoiceId\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name, c.Country\n),\nranked AS (\n    SELECT\n        Genre,\n        Country,\n        TracksSold,\n        RANK() OVER (PARTITION BY Genre ORDER BY TracksSold DESC) AS rnk\n    FROM genre_country_sales\n)\nSELECT\n    Genre,\n    Country,\n    TracksSold\nFROM ranked\nWHERE rnk = 1\nORDER BY Genre",
-      "answer": "The top‑selling country for each listed genre is: Alternative – USA (5); Alternative & Punk – USA (50); Blues – USA (15); Bossa Nova – Canada and USA (tied at 7); Classical – France (10); Comedy – USA (8); Drama – Czech Republic and USA (tied at 6); Easy Listening – Chile and USA (tied at 3); Electronica/Dance – Canada (4); Heavy Metal – USA (4); Hip Hop/Rap – Canada (5); Jazz – USA (22); Latin – USA (91); Metal – USA (64); Pop – USA (5); R&B/Soul – USA (12); Reggae – Canada (7); Rock – USA (157); Rock And Roll – USA (3); Sci Fi & Fantasy – USA (5); Science Fiction – Chile and Germany (tied at 2).  \n\nFour additional genre rows were omitted from the result set, so their leading countries are not shown.",
+      "sql": "WITH genre_country_sales AS (\n    SELECT g.GenreId,\n           g.Name AS GenreName,\n           c.Country,\n           SUM(il.Quantity) AS TracksSold\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    JOIN Invoice i ON i.InvoiceId = il.InvoiceId\n    JOIN Customer c ON c.CustomerId = i.CustomerId\n    GROUP BY g.GenreId, g.Name, c.Country\n),\nranked AS (\n    SELECT GenreId,\n           GenreName,\n           Country,\n           TracksSold,\n           RANK() OVER (PARTITION BY GenreId ORDER BY TracksSold DESC) AS rnk\n    FROM genre_country_sales\n)\nSELECT GenreName,\n       Country,\n       TracksSold\nFROM ranked\nWHERE rnk = 1\nORDER BY GenreName",
+      "answer": "The leading countries by genre are: Alternative – USA (5); Alternative & Punk – USA (50); Blues – USA (15); Bossa Nova – Canada (7) and USA (7); Classical – France (10); Comedy – USA (8); Drama – Czech Republic (6) and USA (6); Easy Listening – Chile (3) and USA (3); Electronica/Dance – Canada (4); Heavy Metal – USA (4); Hip Hop/Rap – Canada (5); Jazz – USA (22); Latin – USA (91); Metal – USA (64); Pop – USA (5); R&B/Soul – USA (12); Reggae – Canada (7); Rock – USA (157); Rock And Roll – USA (3); Sci Fi & Fantasy – USA (5); Science Fiction – Chile (2) and Germany (2).",
       "executed": true,
       "strict_match": true,
       "lenient_match": true,
@@ -484,16 +436,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH genre_country_sales AS (\n    SELECT \n        g.GenreId,\n        g.Name AS Genre,\n        c.Country,\n        SUM(il.Quantity) AS TracksSold\n    FROM InvoiceLine il\n    JOIN Invoice i ON il.InvoiceId = i.InvoiceId\n    JOIN Customer c ON i.CustomerId = c.CustomerId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY g.GenreId, g.Name, c.Country\n),\nranked AS (\n    SELECT\n        Genre,\n        Country,\n        TracksSold,\n        RANK() OVER (PARTITION BY Genre ORDER BY TracksSold DESC) AS rnk\n    FROM genre_country_sales\n)\nSELECT\n    Genre,\n    Country,\n    TracksSold\nFROM ranked\nWHERE rnk = 1\nORDER BY Genre",
+          "sql": "WITH genre_country_sales AS (\n    SELECT g.GenreId,\n           g.Name AS GenreName,\n           c.Country,\n           SUM(il.Quantity) AS TracksSold\n    FROM Genre g\n    JOIN Track t ON t.GenreId = g.GenreId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    JOIN Invoice i ON i.InvoiceId = il.InvoiceId\n    JOIN Customer c ON c.CustomerId = i.CustomerId\n    GROUP BY g.GenreId, g.Name, c.Country\n),\nranked AS (\n    SELECT GenreId,\n           GenreName,\n           Country,\n           TracksSold,\n           RANK() OVER (PARTITION BY GenreId ORDER BY TracksSold DESC) AS rnk\n    FROM genre_country_sales\n)\nSELECT GenreName,\n       Country,\n       TracksSold\nFROM ranked\nWHERE rnk = 1\nORDER BY GenreName",
           "stage": "success",
           "error": null,
           "row_count": 29
         }
       ],
-      "elapsed_s": 22.41,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 13.86
     },
     {
       "id": "h11",
@@ -502,8 +451,8 @@
       "gold_sql": "SELECT c.FirstName, c.LastName, COUNT(DISTINCT t.GenreId) AS genre_count FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId GROUP BY c.CustomerId HAVING COUNT(DISTINCT t.GenreId) >= 5 ORDER BY genre_count DESC",
       "crashed": false,
       "crash_error": null,
-      "sql": "SELECT c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT g.GenreId) AS GenreCount\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\nJOIN Track t ON t.TrackId = il.TrackId\nJOIN Genre g ON g.GenreId = t.GenreId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING COUNT(DISTINCT g.GenreId) >= 5\nORDER BY c.CustomerId",
-      "answer": "The query returns 58 customers who have bought tracks in five or more genres; the first few are Customer 1 Luís Gonçalves (8 genres), Customer 2 Leonie Köhler (7), Customer 3 François Tremblay (10), Customer 4 Bjørn Hansen (8), Customer 5 František Wichterlová (8), Customer 6 Helena Holý (9), Customer 7 Astrid Gruber (9), Customer 9 Kara Nielsen (5), Customer 10 Eduardo Martins (7), Customer 11 Alexandre Rocha (6), Customer 12 Roberto Almeida (5), Customer 13 Fernanda Ramos (7), Customer 14 Mark Philips (10), Customer 15 Jennifer Peterson (8), Customer 16 Frank Harris (7), Customer 17 Jack Smith (10), Customer 18 Michelle Brooks (6), Customer 19 Tim Goyer (9), Customer 20 Dan Miller (7), Customer 21 Kathy Chase (9), Customer 22 Heather Leacock (8), Customer 23 John Gordon (9), Customer 24 Frank Ralston (10), Customer 25 Victor Stevens (8) and Customer 26 Richard Cunningham (7), plus 32 additional customers not shown.",
+      "sql": "SELECT c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT g.GenreId) AS GenreCount\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\nJOIN Track t ON t.TrackId = il.TrackId\nJOIN Genre g ON g.GenreId = t.GenreId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING COUNT(DISTINCT g.GenreId) >= 5\nORDER BY GenreCount DESC\nLIMIT 100",
+      "answer": "The customers who have bought tracks from at least five different genres include Luis Rojas (12 genres), Ladislav Kovács (11), François Tremblay, Mark Philips, Jack Smith, Frank Ralston, João Fernandes and Fynn Zimmermann (each 10), Helena Holý, Astrid Gruber, Tim Goyer, Kathy Chase, John Gordon, Patrick Gray, Marc Dubois and Isabelle Mercier (each 9), and Luís Gonçalves, Bjørn Hansen, František Wichterlová, Jennifer Peterson, Heather Leacock, Victor Stevens, Hugh O'Reilly, Steve Murray and Manoj Pareek (each 8). In total there are 58 customers meeting the criterion, with 32 additional rows not shown in the excerpt.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -514,16 +463,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT g.GenreId) AS GenreCount\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\nJOIN Track t ON t.TrackId = il.TrackId\nJOIN Genre g ON g.GenreId = t.GenreId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING COUNT(DISTINCT g.GenreId) >= 5\nORDER BY c.CustomerId",
+          "sql": "SELECT c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT g.GenreId) AS GenreCount\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\nJOIN Track t ON t.TrackId = il.TrackId\nJOIN Genre g ON g.GenreId = t.GenreId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING COUNT(DISTINCT g.GenreId) >= 5\nORDER BY GenreCount DESC\nLIMIT 100",
           "stage": "success",
           "error": null,
           "row_count": 57
         }
       ],
-      "elapsed_s": 18.18,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 12.1
     },
     {
       "id": "h12",
@@ -532,8 +478,8 @@
       "gold_sql": "WITH ranked AS (SELECT c.CustomerId, c.FirstName, c.LastName, i.InvoiceDate, i.Total, RANK() OVER (PARTITION BY c.CustomerId ORDER BY i.Total DESC) AS rnk FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId) SELECT FirstName, LastName, InvoiceDate, ROUND(Total, 2) AS Total FROM ranked WHERE rnk = 1 ORDER BY LastName, FirstName",
       "crashed": false,
       "crash_error": null,
-      "sql": "SELECT c.CustomerId,\n       c.FirstName,\n       c.LastName,\n       i.InvoiceId,\n       i.InvoiceDate,\n       i.Total AS InvoiceTotal\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN (\n    SELECT InvoiceId,\n           CustomerId,\n           RANK() OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS rnk\n    FROM Invoice\n) ir ON ir.InvoiceId = i.InvoiceId\nWHERE ir.rnk = 1\nORDER BY c.CustomerId",
-      "answer": "The query returns one row per customer showing the invoice on which they spent the most, e.g., Customer 1 (Luís Gonçalves) – invoice 327 for $13.86; Customer 2 (Leonie Köhler) – invoice 12 for $13.86; …; Customer 25 (Victor Stevens) – invoice 201 for $18.86 (the remaining 34 rows follow the same pattern).",
+      "sql": "SELECT c.CustomerId,\n       c.FirstName,\n       c.LastName,\n       i.InvoiceId,\n       i.InvoiceDate,\n       i.Total AS InvoiceTotal\nFROM (\n    SELECT InvoiceId,\n           CustomerId,\n           InvoiceDate,\n           Total,\n           RANK() OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS rnk\n    FROM Invoice\n) i\nJOIN Customer c ON c.CustomerId = i.CustomerId\nWHERE i.rnk = 1\nORDER BY c.CustomerId",
+      "answer": "The query returned each customer’s single highest‑value invoice—for example, Luís Gonçalves (Customer 1) spent $13.86 on invoice 327, Helena Holý (Customer 6) spent $25.86 on invoice 404 (the highest total in the list), and many other customers have a top invoice of $13.86. All other customers’ highest invoices are listed with the exact totals shown in the result set.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -544,16 +490,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT c.CustomerId,\n       c.FirstName,\n       c.LastName,\n       i.InvoiceId,\n       i.InvoiceDate,\n       i.Total AS InvoiceTotal\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN (\n    SELECT InvoiceId,\n           CustomerId,\n           RANK() OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS rnk\n    FROM Invoice\n) ir ON ir.InvoiceId = i.InvoiceId\nWHERE ir.rnk = 1\nORDER BY c.CustomerId",
+          "sql": "SELECT c.CustomerId,\n       c.FirstName,\n       c.LastName,\n       i.InvoiceId,\n       i.InvoiceDate,\n       i.Total AS InvoiceTotal\nFROM (\n    SELECT InvoiceId,\n           CustomerId,\n           InvoiceDate,\n           Total,\n           RANK() OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS rnk\n    FROM Invoice\n) i\nJOIN Customer c ON c.CustomerId = i.CustomerId\nWHERE i.rnk = 1\nORDER BY c.CustomerId",
           "stage": "success",
           "error": null,
           "row_count": 59
         }
       ],
-      "elapsed_s": 22.09,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 20.58
     },
     {
       "id": "h13",
@@ -562,8 +505,8 @@
       "gold_sql": "SELECT c.FirstName, c.LastName, COUNT(DISTINCT ar.ArtistId) AS artists_purchased FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId JOIN Album al ON al.AlbumId = t.AlbumId JOIN Artist ar ON ar.ArtistId = al.ArtistId GROUP BY c.CustomerId ORDER BY artists_purchased DESC LIMIT 5",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH CustomerArtistCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         COUNT(DISTINCT ar.ArtistId) AS ArtistCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  JOIN Track t ON t.TrackId = il.TrackId\n  JOIN Album al ON al.AlbumId = t.AlbumId\n  JOIN Artist ar ON ar.ArtistId = al.ArtistId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName\n)\nSELECT CustomerId,\n       FirstName,\n       LastName,\n       ArtistCount\nFROM CustomerArtistCounts\nWHERE ArtistCount = (SELECT MAX(ArtistCount) FROM CustomerArtistCounts)",
-      "answer": "Marc Dubois (Customer 41) has bought tracks from the most artists, with purchases spanning 22 different artists.",
+      "sql": "WITH cust_counts AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        COUNT(DISTINCT ar.ArtistId) AS ArtistCount\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    JOIN Artist ar ON al.ArtistId = ar.ArtistId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    ArtistCount\nFROM cust_counts\nWHERE ArtistCount = (SELECT MAX(ArtistCount) FROM cust_counts)\nORDER BY CustomerId",
+      "answer": "Marc Dubois (Customer 41) has bought tracks from the most artists, a total of 22 different artists.",
       "executed": true,
       "strict_match": false,
       "lenient_match": false,
@@ -574,23 +517,20 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT c.CustomerId, c.FirstName, c.LastName, COUNT(DISTINCT ar.ArtistId) AS ArtistCount, RANK() OVER (ORDER BY COUNT(DISTINCT ar.ArtistId) DESC) AS rnk\nFROM Customer c\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nJOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\nJOIN Track t ON t.TrackId = il.TrackId\nJOIN Album al ON al.AlbumId = t.AlbumId\nJOIN Artist ar ON ar.ArtistId = al.ArtistId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING rnk = 1",
+          "sql": "SELECT\n    c.CustomerId,\n    c.FirstName,\n    c.LastName,\n    COUNT(DISTINCT ar.ArtistId) AS ArtistCount,\n    RANK() OVER (ORDER BY COUNT(DISTINCT ar.ArtistId) DESC) AS rnk\nFROM Customer c\nJOIN Invoice i ON c.CustomerId = i.CustomerId\nJOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId\nJOIN Track t ON il.TrackId = t.TrackId\nJOIN Album al ON t.AlbumId = al.AlbumId\nJOIN Artist ar ON al.ArtistId = ar.ArtistId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nHAVING rnk = 1",
           "stage": "execution",
           "error": "(sqlite3.OperationalError) misuse of aliased window function rnk",
           "row_count": null
         },
         {
           "attempt": 2,
-          "sql": "WITH CustomerArtistCounts AS (\n  SELECT c.CustomerId,\n         c.FirstName,\n         c.LastName,\n         COUNT(DISTINCT ar.ArtistId) AS ArtistCount\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  JOIN Track t ON t.TrackId = il.TrackId\n  JOIN Album al ON al.AlbumId = t.AlbumId\n  JOIN Artist ar ON ar.ArtistId = al.ArtistId\n  GROUP BY c.CustomerId, c.FirstName, c.LastName\n)\nSELECT CustomerId,\n       FirstName,\n       LastName,\n       ArtistCount\nFROM CustomerArtistCounts\nWHERE ArtistCount = (SELECT MAX(ArtistCount) FROM CustomerArtistCounts)",
+          "sql": "WITH cust_counts AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        COUNT(DISTINCT ar.ArtistId) AS ArtistCount\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Album al ON t.AlbumId = al.AlbumId\n    JOIN Artist ar ON al.ArtistId = ar.ArtistId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    ArtistCount\nFROM cust_counts\nWHERE ArtistCount = (SELECT MAX(ArtistCount) FROM cust_counts)\nORDER BY CustomerId",
           "stage": "success",
           "error": null,
           "row_count": 1
         }
       ],
-      "elapsed_s": 24.92,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 18.11
     },
     {
       "id": "h14",
@@ -599,8 +539,8 @@
       "gold_sql": "WITH country_genre AS (SELECT c.Country, g.GenreId, g.Name AS Genre, SUM(il.Quantity) AS purchases FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId JOIN Track t ON t.TrackId = il.TrackId JOIN Genre g ON g.GenreId = t.GenreId GROUP BY c.Country, g.GenreId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY purchases DESC) AS rnk FROM country_genre) SELECT Country, Genre, purchases FROM ranked WHERE rnk = 1 ORDER BY Country",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH genre_counts AS (\n  SELECT c.Country,\n         g.Name AS Genre,\n         SUM(il.Quantity) AS TracksPurchased\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  JOIN Track t ON t.TrackId = il.TrackId\n  JOIN Genre g ON g.GenreId = t.GenreId\n  GROUP BY c.Country, g.Name\n),\nranked AS (\n  SELECT Country,\n         Genre,\n         TracksPurchased,\n         RANK() OVER (PARTITION BY Country ORDER BY TracksPurchased DESC) AS rnk\n  FROM genre_counts\n)\nSELECT Country, Genre, TracksPurchased\nFROM ranked\nWHERE rnk = 1\nORDER BY Country",
-      "answer": "Rock is the most‑purchased genre in every listed country except Sweden, where Latin leads with 12 tracks, and Argentina, where both Alternative & Punk and Rock are tied at 9 tracks each. All other countries (Australia, Austria, Belgium, Brazil, Canada, Chile, Czech Republic, Denmark, Finland, France, Germany, Hungary, India, Ireland, Italy, Netherlands, Norway, Poland, Portugal, Spain, USA, United Kingdom) have Rock as the top genre with the track counts shown.",
+      "sql": "SELECT Country, Genre, TracksPurchased\nFROM (\n    SELECT c.Country,\n           g.Name AS Genre,\n           SUM(il.Quantity) AS TracksPurchased,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY c.Country, g.Name\n) \nWHERE rnk = 1\nORDER BY Country",
+      "answer": "The most‑purchased genre is Rock for every country except Sweden, where Latin leads with 12 purchases; Argentina has a tie, with both Rock and Alternative & Punk each at 9 purchases.",
       "executed": true,
       "strict_match": true,
       "lenient_match": true,
@@ -611,16 +551,13 @@
       "history": [
         {
           "attempt": 1,
-          "sql": "WITH genre_counts AS (\n  SELECT c.Country,\n         g.Name AS Genre,\n         SUM(il.Quantity) AS TracksPurchased\n  FROM Customer c\n  JOIN Invoice i ON i.CustomerId = c.CustomerId\n  JOIN InvoiceLine il ON il.InvoiceId = i.InvoiceId\n  JOIN Track t ON t.TrackId = il.TrackId\n  JOIN Genre g ON g.GenreId = t.GenreId\n  GROUP BY c.Country, g.Name\n),\nranked AS (\n  SELECT Country,\n         Genre,\n         TracksPurchased,\n         RANK() OVER (PARTITION BY Country ORDER BY TracksPurchased DESC) AS rnk\n  FROM genre_counts\n)\nSELECT Country, Genre, TracksPurchased\nFROM ranked\nWHERE rnk = 1\nORDER BY Country",
+          "sql": "SELECT Country, Genre, TracksPurchased\nFROM (\n    SELECT c.Country,\n           g.Name AS Genre,\n           SUM(il.Quantity) AS TracksPurchased,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(il.Quantity) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId\n    JOIN Track t ON il.TrackId = t.TrackId\n    JOIN Genre g ON t.GenreId = g.GenreId\n    GROUP BY c.Country, g.Name\n) \nWHERE rnk = 1\nORDER BY Country",
           "stage": "success",
           "error": null,
           "row_count": 25
         }
       ],
-      "elapsed_s": 12.54,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 17.61
     },
     {
       "id": "h15",
@@ -629,35 +566,25 @@
       "gold_sql": "SELECT e.FirstName, e.LastName, ROUND(AVG(i.Total), 2) AS avg_invoice FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId ORDER BY avg_invoice DESC LIMIT 1",
       "crashed": false,
       "crash_error": null,
-      "sql": "SELECT EmployeeId, FirstName, LastName, Title, avg_invoice\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           e.Title,\n           agg.avg_invoice,\n           RANK() OVER (ORDER BY agg.avg_invoice DESC) AS rnk\n    FROM (\n        SELECT c.SupportRepId AS EmployeeId, AVG(i.Total) AS avg_invoice\n        FROM Customer c\n        JOIN Invoice i ON i.CustomerId = c.CustomerId\n        GROUP BY c.SupportRepId\n    ) agg\n    JOIN Employee e ON e.EmployeeId = agg.EmployeeId\n) sub\nWHERE rnk = 1",
-      "answer": "The employee with the highest average invoice value among their customers is Steve Johnson (Employee ID 5), a Sales Support Agent, with an average invoice of 5.7155555555555555.",
+      "sql": "SELECT e.EmployeeId, e.FirstName, e.LastName, e.Title, emp.AvgInvoiceTotal\nFROM (\n    SELECT c.SupportRepId AS EmployeeId,\n           AVG(i.Total) AS AvgInvoiceTotal,\n           RANK() OVER (ORDER BY AVG(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.SupportRepId\n) emp\nJOIN Employee e ON e.EmployeeId = emp.EmployeeId\nWHERE emp.rnk = 1",
+      "answer": "The employee with the highest average invoice value among their customers is Steve Johnson (Employee ID 5), a Sales Support Agent, with an average invoice total of 5.7155555555555555.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
-      "attempts": 2,
-      "first_attempt_failed": true,
+      "attempts": 1,
+      "first_attempt_failed": false,
       "gold_row_count": 1,
       "agent_row_count": 1,
       "history": [
         {
           "attempt": 1,
-          "sql": "SELECT EmployeeId, FirstName, LastName, Title, AvgInvoice\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           e.Title,\n           AVG(i.Total) OVER (PARTITION BY e.EmployeeId) AS AvgInvoice,\n           RANK() OVER (ORDER BY AVG(i.Total) OVER (PARTITION BY e.EmployeeId) DESC) AS rnk\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n) sub\nWHERE rnk = 1",
-          "stage": "execution",
-          "error": "(sqlite3.OperationalError) misuse of window function AVG()",
-          "row_count": null
-        },
-        {
-          "attempt": 2,
-          "sql": "SELECT EmployeeId, FirstName, LastName, Title, avg_invoice\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           e.Title,\n           agg.avg_invoice,\n           RANK() OVER (ORDER BY agg.avg_invoice DESC) AS rnk\n    FROM (\n        SELECT c.SupportRepId AS EmployeeId, AVG(i.Total) AS avg_invoice\n        FROM Customer c\n        JOIN Invoice i ON i.CustomerId = c.CustomerId\n        GROUP BY c.SupportRepId\n    ) agg\n    JOIN Employee e ON e.EmployeeId = agg.EmployeeId\n) sub\nWHERE rnk = 1",
+          "sql": "SELECT e.EmployeeId, e.FirstName, e.LastName, e.Title, emp.AvgInvoiceTotal\nFROM (\n    SELECT c.SupportRepId AS EmployeeId,\n           AVG(i.Total) AS AvgInvoiceTotal,\n           RANK() OVER (ORDER BY AVG(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.SupportRepId\n) emp\nJOIN Employee e ON e.EmployeeId = emp.EmployeeId\nWHERE emp.rnk = 1",
           "stage": "success",
           "error": null,
           "row_count": 1
         }
       ],
-      "elapsed_s": 32.16,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 11.58
     },
     {
       "id": "a1",
@@ -666,8 +593,89 @@
       "gold_sql": "WITH spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country",
       "crashed": false,
       "crash_error": null,
-      "sql": "WITH ranked_customers AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        c.Country,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    Country,\n    TotalSpent\nFROM ranked_customers\nWHERE rnk = 1\nORDER BY Country\nLIMIT 1000",
-      "answer": "The highest‑spending buyer in each listed country is: Argentina – Diego Gutiérrez (Customer 56) $37.62; Australia – Mark Taylor (55) $37.62; Austria – Astrid Gruber (7) $42.62; Belgium – Daan Peeters (8) $37.62; Brazil – Luís Gonçalves (1) $39.62; Canada – François Tremblay (3) $39.62; Chile – Luis Rojas (57) $46.62; Czech Republic – Helena Holý (6) $49.62; Denmark – Kara Nielsen (9) $37.62; Finland – Terhi Hämäläinen (44) $41.62; France – Isabelle Mercier (43) $40.62; Germany – Fynn Zimmermann (37) $43.62; Hungary – Ladislav Kovács (45) $45.62; India – Manoj Pareek (58) $38.62; Ireland – Hugh O'Reilly (46) $45.62; Italy – Lucas Mancini (47) $37.62; Netherlands – Johannes Van der Berg (48) $40.62; Norway – Bjørn Hansen (4) $39.62; Poland – Stanisław Wójcik (49) $37.62; Portugal – João Fernandes (34) $39.62; Spain – Enrique Muñoz (50) $37.62; Sweden – Joakim Johansson (51) $38.62; USA – Richard Cunningham (26) $47.62; United Kingdom – Emma Jones (52) $37.62 and Phil Hughes (53) $37.62 (tied). One additional country not shown in the excerpt also has its top buyer.",
+      "sql": "SELECT\n    Country,\n    CustomerId,\n    FirstName,\n    LastName,\n    TotalSpent\nFROM (\n    SELECT\n        c.Country,\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    GROUP BY c.Country, c.CustomerId, c.FirstName, c.LastName\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
+      "answer": "The result lists the single highest‑spending customer for each country (with totals shown), for example Diego Gutiérrez in Argentina spent $37.62, Mark Taylor in Australia spent $37.62, Astrid Gruber in Austria spent $42.62, and so on through all listed countries. The United Kingdom has a tie: both Emma Jones and Phil Hughes each spent $37.62, making them joint top buyers there.",
+      "executed": true,
+      "strict_match": false,
+      "lenient_match": true,
+      "attempts": 1,
+      "first_attempt_failed": false,
+      "gold_row_count": 26,
+      "agent_row_count": 26,
+      "history": [
+        {
+          "attempt": 1,
+          "sql": "SELECT\n    Country,\n    CustomerId,\n    FirstName,\n    LastName,\n    TotalSpent\nFROM (\n    SELECT\n        c.Country,\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON c.CustomerId = i.CustomerId\n    GROUP BY c.Country, c.CustomerId, c.FirstName, c.LastName\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
+          "stage": "success",
+          "error": null,
+          "row_count": 26
+        }
+      ],
+      "elapsed_s": 9.24
+    },
+    {
+      "id": "a2",
+      "category": "ambiguous",
+      "question": "For every music type, which song is selling best?",
+      "gold_sql": "WITH sales AS (SELECT g.GenreId, g.Name AS Genre, t.TrackId, t.Name AS Track, SUM(il.Quantity) AS purchases FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY g.GenreId, t.TrackId), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY purchases DESC) AS rnk FROM sales) SELECT Genre, Track, purchases FROM ranked WHERE rnk = 1 ORDER BY Genre",
+      "crashed": false,
+      "crash_error": null,
+      "sql": "SELECT\n    GenreName,\n    TrackName,\n    Revenue\nFROM (\n    SELECT\n        g.Name AS GenreName,\n        t.Name AS TrackName,\n        SUM(il.UnitPrice * il.Quantity) AS Revenue,\n        RANK() OVER (PARTITION BY g.GenreId ORDER BY SUM(il.UnitPrice * il.Quantity) DESC) AS rnk\n    FROM Track t\n    JOIN Genre g ON t.GenreId = g.GenreId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n) sub\nWHERE rnk = 1\nORDER BY GenreName",
+      "answer": "The query returns the highest‑selling track(s) for each genre, showing that every “Alternative” song tied for first place earned $0.99, while each “Alternative & Punk” track tied for first earned $1.98; the same pattern of tied top‑selling songs (with their exact revenues) appears for the remaining genres in the full result set.",
+      "executed": true,
+      "strict_match": false,
+      "lenient_match": false,
+      "attempts": 1,
+      "first_attempt_failed": false,
+      "gold_row_count": 200,
+      "agent_row_count": 200,
+      "history": [
+        {
+          "attempt": 1,
+          "sql": "SELECT\n    GenreName,\n    TrackName,\n    Revenue\nFROM (\n    SELECT\n        g.Name AS GenreName,\n        t.Name AS TrackName,\n        SUM(il.UnitPrice * il.Quantity) AS Revenue,\n        RANK() OVER (PARTITION BY g.GenreId ORDER BY SUM(il.UnitPrice * il.Quantity) DESC) AS rnk\n    FROM Track t\n    JOIN Genre g ON t.GenreId = g.GenreId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY g.GenreId, g.Name, t.TrackId, t.Name\n) sub\nWHERE rnk = 1\nORDER BY GenreName",
+          "stage": "success",
+          "error": null,
+          "row_count": 200
+        }
+      ],
+      "elapsed_s": 15.31
+    },
+    {
+      "id": "a3",
+      "category": "ambiguous",
+      "question": "Which worker has customers spending biggest money?",
+      "gold_sql": "SELECT e.FirstName, e.LastName, ROUND(SUM(i.Total), 2) AS Revenue FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId ORDER BY Revenue DESC LIMIT 1",
+      "crashed": false,
+      "crash_error": null,
+      "sql": "SELECT EmployeeId, FirstName, LastName, TotalSpent\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS TotalSpent,\n           RANK() OVER (ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName\n) AS ranked\nWHERE rnk = 1",
+      "answer": "The worker whose customers have spent the most is employee 3, Jane Peacock, with total customer spending of $833.04.",
+      "executed": true,
+      "strict_match": false,
+      "lenient_match": true,
+      "attempts": 1,
+      "first_attempt_failed": false,
+      "gold_row_count": 1,
+      "agent_row_count": 1,
+      "history": [
+        {
+          "attempt": 1,
+          "sql": "SELECT EmployeeId, FirstName, LastName, TotalSpent\nFROM (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS TotalSpent,\n           RANK() OVER (ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName\n) AS ranked\nWHERE rnk = 1",
+          "stage": "success",
+          "error": null,
+          "row_count": 1
+        }
+      ],
+      "elapsed_s": 13.51
+    },
+    {
+      "id": "a4",
+      "category": "ambiguous",
+      "question": "In each place, who is the number one customer by purchase?",
+      "gold_sql": "WITH spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country",
+      "crashed": false,
+      "crash_error": null,
+      "sql": "WITH spend AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        c.Country,\n        SUM(i.Total) AS TotalSpent\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\nranked AS (\n    SELECT\n        *,\n        RANK() OVER (PARTITION BY Country ORDER BY TotalSpent DESC) AS rnk\n    FROM spend\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    Country,\n    TotalSpent\nFROM ranked\nWHERE rnk = 1\nORDER BY Country\nLIMIT 1000",
+      "answer": "The top‑spending customer in each country is: Argentina – Diego Gutiérrez (37.62); Australia – Mark Taylor (37.62); Austria – Astrid Gruber (42.62); Belgium – Daan Peeters (37.62); Brazil – Luís Gonçalves (39.62); Canada – François Tremblay (39.62); Chile – Luis Rojas (46.62); Czech Republic – Helena Holý (49.62); Denmark – Kara Nielsen (37.62); Finland – Terhi Hämäläinen (41.62); France – Isabelle Mercier (40.62); Germany – Fynn Zimmermann (43.62); Hungary – Ladislav Kovács (45.62); India – Manoj Pareek (38.62); Ireland – Hugh O'Reilly (45.62); Italy – Lucas Mancini (37.62); Netherlands – Johannes Van der Berg (40.62); Norway – Bjørn Hansen (39.62); Poland – Stanisław Wójcik (37.62); Portugal – João Fernandes (39.62); Spain – Enrique Muñoz (37.62); Sweden – Joakim Johansson (38.62); USA – Richard Cunningham (47.62); United Kingdom – Emma Jones (37.62) (tied with Phil Hughes at 37.62).  \n\nThere is one additional row not shown in the excerpt.",
       "executed": true,
       "strict_match": false,
       "lenient_match": true,
@@ -685,144 +693,31 @@
         },
         {
           "attempt": 2,
-          "sql": "WITH ranked_customers AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        c.Country,\n        SUM(i.Total) AS TotalSpent,\n        RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    Country,\n    TotalSpent\nFROM ranked_customers\nWHERE rnk = 1\nORDER BY Country\nLIMIT 1000",
+          "sql": "WITH spend AS (\n    SELECT\n        c.CustomerId,\n        c.FirstName,\n        c.LastName,\n        c.Country,\n        SUM(i.Total) AS TotalSpent\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n),\nranked AS (\n    SELECT\n        *,\n        RANK() OVER (PARTITION BY Country ORDER BY TotalSpent DESC) AS rnk\n    FROM spend\n)\nSELECT\n    CustomerId,\n    FirstName,\n    LastName,\n    Country,\n    TotalSpent\nFROM ranked\nWHERE rnk = 1\nORDER BY Country\nLIMIT 1000",
           "stage": "success",
           "error": null,
           "row_count": 26
         }
       ],
-      "elapsed_s": 25.76,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
-    },
-    {
-      "id": "a2",
-      "category": "ambiguous",
-      "question": "For every music type, which song is selling best?",
-      "gold_sql": "WITH sales AS (SELECT g.GenreId, g.Name AS Genre, t.TrackId, t.Name AS Track, SUM(il.Quantity) AS purchases FROM Genre g JOIN Track t ON t.GenreId = g.GenreId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY g.GenreId, t.TrackId), ranked AS (SELECT *, RANK() OVER (PARTITION BY GenreId ORDER BY purchases DESC) AS rnk FROM sales) SELECT Genre, Track, purchases FROM ranked WHERE rnk = 1 ORDER BY Genre",
-      "crashed": false,
-      "crash_error": null,
-      "sql": "WITH TrackRevenue AS (\n  SELECT g.Name AS Genre,\n         t.Name AS Track,\n         SUM(il.UnitPrice * il.Quantity) AS Revenue\n  FROM Track t\n  JOIN Genre g ON t.GenreId = g.GenreId\n  JOIN InvoiceLine il ON il.TrackId = t.TrackId\n  GROUP BY g.Name, t.Name\n)\nSELECT Genre, Track, Revenue\nFROM (\n  SELECT tr.*,\n         RANK() OVER (PARTITION BY Genre ORDER BY Revenue DESC) AS rnk\n  FROM TrackRevenue tr\n) sub\nWHERE rnk = 1\nORDER BY Genre",
-      "answer": "The top‑selling track(s) for each genre are: Alternative – all of the listed tracks (All Night Thing, Billie Jean, Call Me a Dog, Disappearing Act, Four Walled World, Moth, Safe and Sound, Say Hello 2 Heaven, Scar On the Sky, Shape of Things to Come, Show Me How to Live (Live at the Quart Festival), Slowness, Sound of a Gun, Until We Fall) each earned $0.99; Alternative & Punk – “Release” earned $2.97; Blues – each of the listed tracks (Lay Down Sally, Layla, Leave My Girl Alone, Let Me Love You Baby, Lonely Stranger, Midnight From The Inside Out, Promises, Sunshine Of Your Love, Title Song, Travis Walk) earned $1.98.",
-      "executed": true,
-      "strict_match": false,
-      "lenient_match": false,
-      "attempts": 1,
-      "first_attempt_failed": false,
-      "gold_row_count": 200,
-      "agent_row_count": 139,
-      "history": [
-        {
-          "attempt": 1,
-          "sql": "WITH TrackRevenue AS (\n  SELECT g.Name AS Genre,\n         t.Name AS Track,\n         SUM(il.UnitPrice * il.Quantity) AS Revenue\n  FROM Track t\n  JOIN Genre g ON t.GenreId = g.GenreId\n  JOIN InvoiceLine il ON il.TrackId = t.TrackId\n  GROUP BY g.Name, t.Name\n)\nSELECT Genre, Track, Revenue\nFROM (\n  SELECT tr.*,\n         RANK() OVER (PARTITION BY Genre ORDER BY Revenue DESC) AS rnk\n  FROM TrackRevenue tr\n) sub\nWHERE rnk = 1\nORDER BY Genre",
-          "stage": "success",
-          "error": null,
-          "row_count": 139
-        }
-      ],
-      "elapsed_s": 25.25,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
-    },
-    {
-      "id": "a3",
-      "category": "ambiguous",
-      "question": "Which worker has customers spending biggest money?",
-      "gold_sql": "SELECT e.FirstName, e.LastName, ROUND(SUM(i.Total), 2) AS Revenue FROM Employee e JOIN Customer c ON c.SupportRepId = e.EmployeeId JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY e.EmployeeId ORDER BY Revenue DESC LIMIT 1",
-      "crashed": false,
-      "crash_error": null,
-      "sql": "WITH emp_spending AS (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS TotalSpent\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (ORDER BY TotalSpent DESC) AS rnk\n    FROM emp_spending\n) \nWHERE rnk = 1",
-      "answer": "The worker whose customers have spent the most money is Jane Peacock (Employee ID 3) with total customer spending of $833.04.",
-      "executed": true,
-      "strict_match": false,
-      "lenient_match": true,
-      "attempts": 2,
-      "first_attempt_failed": true,
-      "gold_row_count": 1,
-      "agent_row_count": 1,
-      "history": [
-        {
-          "attempt": 1,
-          "sql": "SELECT e.EmployeeId, e.FirstName, e.LastName, SUM(i.Total) AS TotalSpent, RANK() OVER (ORDER BY SUM(i.Total) DESC) AS rnk\nFROM Employee e\nJOIN Customer c ON c.SupportRepId = e.EmployeeId\nJOIN Invoice i ON i.CustomerId = c.CustomerId\nGROUP BY e.EmployeeId, e.FirstName, e.LastName\nHAVING rnk = 1",
-          "stage": "execution",
-          "error": "(sqlite3.OperationalError) misuse of aliased window function rnk",
-          "row_count": null
-        },
-        {
-          "attempt": 2,
-          "sql": "WITH emp_spending AS (\n    SELECT e.EmployeeId,\n           e.FirstName,\n           e.LastName,\n           SUM(i.Total) AS TotalSpent\n    FROM Employee e\n    JOIN Customer c ON c.SupportRepId = e.EmployeeId\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY e.EmployeeId, e.FirstName, e.LastName\n)\nSELECT EmployeeId,\n       FirstName,\n       LastName,\n       TotalSpent\nFROM (\n    SELECT *,\n           RANK() OVER (ORDER BY TotalSpent DESC) AS rnk\n    FROM emp_spending\n) \nWHERE rnk = 1",
-          "stage": "success",
-          "error": null,
-          "row_count": 1
-        }
-      ],
-      "elapsed_s": 22.92,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
-    },
-    {
-      "id": "a4",
-      "category": "ambiguous",
-      "question": "In each place, who is the number one customer by purchase?",
-      "gold_sql": "WITH spending AS (SELECT c.Country, c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS Spent FROM Customer c JOIN Invoice i ON i.CustomerId = c.CustomerId GROUP BY c.Country, c.CustomerId), ranked AS (SELECT *, RANK() OVER (PARTITION BY Country ORDER BY Spent DESC) AS rnk FROM spending) SELECT Country, FirstName, LastName, ROUND(Spent, 2) AS Spent FROM ranked WHERE rnk = 1 ORDER BY Country",
-      "crashed": false,
-      "crash_error": null,
-      "sql": "SELECT CustomerId, FirstName, LastName, Country, TotalSpent\nFROM (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           SUM(i.Total) AS TotalSpent,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
-      "answer": "The query lists the top‑spending customer for each country, but the result set is incomplete—it’s missing one row (one country’s top customer isn’t shown). Therefore we can’t provide a complete answer for every place.",
-      "executed": true,
-      "strict_match": false,
-      "lenient_match": true,
-      "attempts": 1,
-      "first_attempt_failed": false,
-      "gold_row_count": 26,
-      "agent_row_count": 26,
-      "history": [
-        {
-          "attempt": 1,
-          "sql": "SELECT CustomerId, FirstName, LastName, Country, TotalSpent\nFROM (\n    SELECT c.CustomerId,\n           c.FirstName,\n           c.LastName,\n           c.Country,\n           SUM(i.Total) AS TotalSpent,\n           RANK() OVER (PARTITION BY c.Country ORDER BY SUM(i.Total) DESC) AS rnk\n    FROM Customer c\n    JOIN Invoice i ON i.CustomerId = c.CustomerId\n    GROUP BY c.CustomerId, c.FirstName, c.LastName, c.Country\n) AS ranked\nWHERE rnk = 1\nORDER BY Country",
-          "stage": "success",
-          "error": null,
-          "row_count": 26
-        }
-      ],
-      "elapsed_s": 15.09,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "elapsed_s": 27.91
     },
     {
       "id": "a5",
       "category": "ambiguous",
       "question": "For each artist, give me the album which people buy maximum.",
       "gold_sql": "WITH album_sales AS (SELECT ar.ArtistId, ar.Name AS Artist, al.AlbumId, al.Title AS Album, SUM(il.Quantity) AS Sales FROM Artist ar JOIN Album al ON al.ArtistId = ar.ArtistId JOIN Track t ON t.AlbumId = al.AlbumId JOIN InvoiceLine il ON il.TrackId = t.TrackId GROUP BY ar.ArtistId, al.AlbumId), ranked AS (SELECT *, RANK() OVER (PARTITION BY ArtistId ORDER BY Sales DESC) AS rnk FROM album_sales) SELECT Artist, Album, Sales FROM ranked WHERE rnk = 1 ORDER BY Artist",
-      "crashed": false,
-      "crash_error": null,
-      "sql": "SELECT ArtistId,\n       ArtistName,\n       AlbumId,\n       AlbumTitle,\n       TotalRevenue\nFROM (\n    SELECT ar.ArtistId,\n           ar.Name AS ArtistName,\n           al.AlbumId,\n           al.Title AS AlbumTitle,\n           SUM(il.UnitPrice * il.Quantity) AS TotalRevenue,\n           RANK() OVER (PARTITION BY ar.ArtistId ORDER BY SUM(il.UnitPrice * il.Quantity) DESC) AS rnk\n    FROM Artist ar\n    JOIN Album al ON al.ArtistId = ar.ArtistId\n    JOIN Track t ON t.AlbumId = al.AlbumId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY ar.ArtistId, ar.Name, al.AlbumId, al.Title\n) AS ranked_albums\nWHERE rnk = 1\nORDER BY ArtistId",
-      "answer": "The query returns, for every artist, the single album that generated the highest total revenue and the exact amount earned (e.g., AC/DC’s “For Those About To Rock We Salute You” = $9.90, Accept’s “Restless and Wild” = $2.97, Aerosmith’s “Big Ones” = $9.90, etc.), and this pattern continues for all 151 artists in the result set.",
-      "executed": true,
+      "crashed": true,
+      "crash_error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kttww9j3fp693se420wzmpdq` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199903, Requested 1873. Please try again in 12m47.232s. Need more tokens? Upgrade to Dev T",
+      "executed": false,
       "strict_match": false,
       "lenient_match": false,
-      "attempts": 1,
-      "first_attempt_failed": false,
-      "gold_row_count": 176,
-      "agent_row_count": 176,
-      "history": [
-        {
-          "attempt": 1,
-          "sql": "SELECT ArtistId,\n       ArtistName,\n       AlbumId,\n       AlbumTitle,\n       TotalRevenue\nFROM (\n    SELECT ar.ArtistId,\n           ar.Name AS ArtistName,\n           al.AlbumId,\n           al.Title AS AlbumTitle,\n           SUM(il.UnitPrice * il.Quantity) AS TotalRevenue,\n           RANK() OVER (PARTITION BY ar.ArtistId ORDER BY SUM(il.UnitPrice * il.Quantity) DESC) AS rnk\n    FROM Artist ar\n    JOIN Album al ON al.ArtistId = ar.ArtistId\n    JOIN Track t ON t.AlbumId = al.AlbumId\n    JOIN InvoiceLine il ON il.TrackId = t.TrackId\n    GROUP BY ar.ArtistId, ar.Name, al.AlbumId, al.Title\n) AS ranked_albums\nWHERE rnk = 1\nORDER BY ArtistId",
-          "stage": "success",
-          "error": null,
-          "row_count": 176
-        }
-      ],
-      "elapsed_s": 22.19,
-      "agreement": "skipped",
-      "confidence": "unverified",
-      "cross_check_sql": ""
+      "attempts": 0,
+      "first_attempt_failed": null,
+      "sql": "",
+      "answer": "",
+      "history": [],
+      "elapsed_s": 0.0
     }
   ],
-  "run_at": "2026-09-15 19:17:14"
+  "run_at": "2026-09-17 21:30:11"
 }

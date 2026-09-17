@@ -15,14 +15,7 @@ _FORBIDDEN = (
     exp.Alter, exp.TruncateTable,
 )
 
-def extract_sql(text: str) -> str:
-\
-\
-\
-\
-\
-\
-       
+def extract_sql(text: str) -> str:    
     text = text.strip()
 
     fenced = re.search(r"```(?:sql)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE)
@@ -43,17 +36,7 @@ def _cte_names(tree: exp.Expression) -> set[str]:
         if cte.alias_or_name
     }
 
-def validate_sql(sql: str) -> tuple[bool, str]:
-\
-\
-\
-\
-\
-\
-\
-\
-\
-       
+def validate_sql(sql: str) -> tuple[bool, str]:   
     if not sql.strip():
         return False, "No SQL was produced."
 
@@ -142,33 +125,10 @@ def _norm_value(v) -> str:
         return f"{round(float(v), 2):g}"
     return str(v).strip().lower()
 
-def _norm_rows(rows: list[dict]) -> list[tuple]:
-\
-\
-\
-\
-\
-\
-       
+def _norm_rows(rows: list[dict]) -> list[tuple]:     
     return sorted(tuple(sorted(_norm_value(v) for v in r.values())) for r in rows)
 
-def _tokens(row: dict, whole_values: bool = True) -> set[str]:
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-       
+def _tokens(row: dict, whole_values: bool = True) -> set[str]: 
     out: set[str] = set()
     for v in row.values():
         n = _norm_value(v)
@@ -181,14 +141,7 @@ def _tokens(row: dict, whole_values: bool = True) -> set[str]:
     return out
 
 def compare_results(expected: list[dict], actual: list[dict]) -> tuple[bool, bool]:
-\
-\
-\
-\
-\
-\
-\
-       
+
     strict = _norm_rows(expected) == _norm_rows(actual)
     if strict:
         return True, True
@@ -206,14 +159,7 @@ def compare_results(expected: list[dict], actual: list[dict]) -> tuple[bool, boo
 
     return False, True
 
-def get_llm(temperature: float = 0.0):
-\
-\
-\
-\
-\
-\
-       
+def get_llm(temperature: float = 0.0):   
     from langchain_groq import ChatGroq
 
     if not os.getenv("GROQ_API_KEY"):

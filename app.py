@@ -18,13 +18,6 @@ with st.sidebar:
         help="Set this to 1 to disable self-correction and see the difference.",
     )
 
-    cross_check = st.toggle(
-        "Cross-check answers", value=True,
-        help="Write the query a second time, independently, and compare results. "
-             "Costs one extra call. Catches answers that are wrong without "
-             "erroring - which the retry loop cannot.",
-    )
-
     st.subheader("Try one of these")
     examples = [
         "Which artist has the most albums?",
@@ -62,25 +55,6 @@ def render_run(state: dict) -> None:
     elif state["status"] != "success":
         right.error(f"Gave up after {attempts} attempts.")
     right.caption(f"{state['elapsed_s']}s")
-
-    if state.get("agreement") == "disagree":
-        st.warning(
-            "Two independently written queries returned different answers, so "
-            "this question is ambiguous. Both readings are below - treat the "
-            "number above as unconfirmed."
-        )
-        with st.expander("The two interpretations", expanded=True):
-            c1, c2 = st.columns(2)
-            with c1:
-                st.caption(f"First query — {len(state['rows'])} rows")
-                st.code(state["sql"], language="sql")
-            with c2:
-                st.caption(f"Second query — {len(state['cross_check_rows'])} rows")
-                st.code(state["cross_check_sql"], language="sql")
-    elif state.get("agreement") == "agree":
-        right.caption("Confirmed by an independent second query.")
-    elif state.get("agreement") == "inconclusive":
-        right.caption("Cross-check query failed; answer is unverified.")
 
     if attempts > 1 or state["status"] != "success":
         with st.expander(f"How it got here ({attempts} attempts)", expanded=True):
@@ -124,7 +98,6 @@ if question:
                 state = run_agent(
                     question,
                     max_attempts=max_attempts,
-                    cross_check=cross_check,
                 )
             except Exception as e:
                 st.error(f"Agent failed to run: {e}")

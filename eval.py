@@ -23,7 +23,6 @@ def evaluate_one(
     max_attempts: int,
     use_domain_notes: bool = True,
     schema_mode: str = "full",
-    cross_check: bool = False,
     network_retries: int = 3,
 ) -> dict:
                                                                                
@@ -38,7 +37,6 @@ def evaluate_one(
                 max_attempts=max_attempts,
                 use_domain_notes=use_domain_notes,
                 schema_mode=schema_mode,
-                cross_check=cross_check,
             )
             break
         except Exception as e:
@@ -56,7 +54,6 @@ def evaluate_one(
             "executed": False, "strict_match": False, "lenient_match": False,
             "attempts": 0, "first_attempt_failed": None,
             "sql": "", "answer": "", "history": [], "elapsed_s": 0.0,
-            "agreement": "skipped", "confidence": "unverified",
         }
 
     executed = state["status"] == "success"
@@ -81,9 +78,6 @@ def evaluate_one(
         "agent_row_count": len(state["rows"]),
         "history": history,
         "elapsed_s": state["elapsed_s"],
-        "agreement": state.get("agreement", "skipped"),
-        "confidence": state.get("confidence", "unverified"),
-        "cross_check_sql": state.get("cross_check_sql", ""),
     }
 
 def summarise(results: list[dict]) -> dict:
@@ -109,12 +103,6 @@ def summarise(results: list[dict]) -> dict:
         c["executed"] += r["executed"]
         c["correct"] += r["lenient_match"]
 
-    verified = [r for r in scored if r.get("agreement") in ("agree", "disagree")]
-    wrong = [r for r in verified if not r["lenient_match"]]
-    right = [r for r in verified if r["lenient_match"]]
-    caught = [r for r in wrong if r["agreement"] == "disagree"]
-    false_alarms = [r for r in right if r["agreement"] == "disagree"]
-
     return {
         "questions_attempted": len(results),
         "questions_scored": n,
@@ -135,20 +123,6 @@ def summarise(results: list[dict]) -> dict:
             round(sum(r["elapsed_s"] for r in scored) / n, 2) if n else 0
         ),
         "by_category": {k: dict(v) for k, v in sorted(by_cat.items())},
-
-        "cross_check_verified": len(verified),
-        "cross_check_inconclusive": sum(
-            1 for r in scored if r.get("agreement") == "inconclusive"
-        ),
-        "wrong_answers": len(wrong),
-        "wrong_answers_flagged": len(caught),
-        "wrong_answers_flagged_pct": (
-            round(100 * len(caught) / len(wrong), 1) if wrong else None
-        ),
-        "false_alarm_pct": (
-            round(100 * len(false_alarms) / len(right), 1) if right else None
-        ),
-        "flagged_ids": [r["id"] for r in verified if r["agreement"] == "disagree"],
     }
 
 def print_report(results: list[dict], summary: dict) -> None:
@@ -189,16 +163,6 @@ def print_report(results: list[dict], summary: dict) -> None:
     print(f"  Retry recovery (correct)       {s['retry_answer_recovery_pct']}%")
     print(f"  Average time per question      {s['avg_seconds_per_question']}s")
 
-    if s["cross_check_verified"]:
-        print(f"\n  Cross-check (catches wrong-but-runnable answers)")
-        print(f"    Questions verified           {s['cross_check_verified']}"
-              f"  ({s['cross_check_inconclusive']} inconclusive)")
-        print(f"    Wrong answers                {s['wrong_answers']}")
-        print(f"    ...flagged as disagreement   {s['wrong_answers_flagged']}"
-              f"  ({s['wrong_answers_flagged_pct']}%)   <- detection rate")
-        print(f"    False alarms on correct ones {s['false_alarm_pct']}%")
-        if s["flagged_ids"]:
-            print(f"    Flagged: {', '.join(s['flagged_ids'])}")
     if s["crashed"]:
         print(f"\n  !! {s['crashed']} question(s) never reached the model and are EXCLUDED")
         print(f"     from every percentage above: {', '.join(s['crashed_ids'])}")
@@ -242,11 +206,6 @@ def main() -> None:
                    help="how much schema the model sees. 'no_fk' hides foreign keys "
                         "so it must guess join columns; 'names_only' hides columns "
                         "entirely. Both manufacture real, recoverable failures.")
-    p.add_argument("--cross-check", action="store_true",
-                   help="run a second independent query per question and compare "
-                        "the results. Costs one extra LLM call each; catches "
-                        "queries that run cleanly but return the wrong answer, "
-                        "which the retry loop cannot.")
     p.add_argument("--handicap", action="store_true",
                    help="strip the hand-written DOMAIN_NOTES from the generator "
                         "prompt. Use this to measure self-correction: with the "
@@ -268,7 +227,6 @@ def main() -> None:
           f"\nDatabase:  {os.getenv('CHINOOK_DB_PATH', 'chinook.db')}"
           f"\nSchema:    {args.schema_mode}"
           f"\nHints:     {'OFF (handicap)' if args.handicap else 'on'}"
-          f"\nCross-chk: {'on' if args.cross_check else 'off'}"
           f"\nAttempts:  {args.max_attempts}\n")
 
     results = []
@@ -276,14 +234,10 @@ def main() -> None:
         print(f"[{i}/{len(questions)}] {q['id']}: {q['question']}")
         r = evaluate_one(q, args.max_attempts,
                          use_domain_notes=not args.handicap,
-                         schema_mode=args.schema_mode,
-                         cross_check=args.cross_check)
+                         schema_mode=args.schema_mode)
         flag = "OK " if r["lenient_match"] else "BAD"
-        extra = ""
-        if r["agreement"] not in ("skipped",):
-            extra = f" cross-check={r['agreement']}"
         print(f"        {flag} attempts={r['attempts']} rows={r.get('agent_row_count')} "
-              f"(gold {r.get('gold_row_count')}){extra}")
+              f"(gold {r.get('gold_row_count')})")
         results.append(r)
         if args.sleep:
             time.sleep(args.sleep)
@@ -295,7 +249,6 @@ def main() -> None:
     summary["model"] = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     summary["schema_mode"] = args.schema_mode
     summary["database"] = os.getenv("CHINOOK_DB_PATH", "chinook.db")
-    summary["cross_check"] = args.cross_check
     print_report(results, summary)
 
     if summary["questions_needing_retry"] == 0:
@@ -315,10 +268,10 @@ def main() -> None:
     )
 
     csv_lines = ["id,category,executed,answer_correct_lenient,answer_correct_strict,"
-                 "attempts,seconds,agreement"]
+                 "attempts,seconds"]
     csv_lines += [
         f"{r['id']},{r['category']},{int(r['executed'])},{int(r['lenient_match'])},"
-        f"{int(r['strict_match'])},{r['attempts']},{r['elapsed_s']},{r.get('agreement','skipped')}"
+        f"{int(r['strict_match'])},{r['attempts']},{r['elapsed_s']}"
         for r in results
     ]
     csv_path = Path(args.out).with_suffix(".csv")

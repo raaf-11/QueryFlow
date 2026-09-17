@@ -7,11 +7,10 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 
 from db import get_schema_description, rows_to_markdown, run_query
-from tools import compare_results, extract_sql, get_llm, validate_sql
+from tools import extract_sql, get_llm, validate_sql
 
 MAX_ATTEMPTS = 3
 EMPTY_RESULT_IS_VALID = True
-CROSS_CHECK_TEMPERATURE = 0.8
 
 
 class AgentState(TypedDict):
@@ -34,13 +33,6 @@ class AgentState(TypedDict):
 
     use_domain_notes: bool
     schema_mode: str               # "full" | "no_fk" | "names_only"
-
-    cross_check: bool
-    cross_check_sql: str
-    cross_check_rows: list[dict[str, Any]]
-    cross_check_error: str | None
-    agreement: str                 # "agree" | "disagree" | "inconclusive" | "skipped"
-    confidence: str                # "high" | "low" | "unverified"
 
 
 DOMAIN_NOTES = """
@@ -92,25 +84,6 @@ FAILED SQL
 Rewrite the query so it answers the original question and does not hit this
 error again. Output ONLY the corrected SQL."""
 
-CROSS_CHECK_SYSTEM = """You are a second analyst. Another analyst has already \
-written a query for this question; you have not seen it, and you must not try \
-to guess what they wrote.
-
-Answer the question independently against the schema below.
-
-SCHEMA
-{schema}
-
-RULES
-1. Output ONLY the SQL query. No prose, no markdown fences.
-2. Exactly one SELECT statement, read-only.
-3. Use only tables and columns from the schema, spelled exactly.
-4. Where a column's meaning or unit is not stated in the schema, choose the
-   most literal reading of the question rather than the most convenient one.
-5. Prefer a different formulation than the obvious one where both are correct -
-   a subquery instead of a join, an aggregate instead of a window, and so on.
-   The point is an independent route to the same answer."""
-
 ANSWER_SYSTEM = """You turn SQL results into a short, direct answer.
 
 Rules:
@@ -118,9 +91,7 @@ Rules:
 - Use the exact values from the results. Never invent or estimate numbers.
 - If the result set is empty, say plainly that there are none - an empty result
   is a real answer, not an error.
-- If the results do not actually answer the question, say so.
-- If told the two queries disagreed, do NOT state a number as fact. Say the
-  question is ambiguous, give both readings, and say what would settle it."""
+- If the results do not actually answer the question, say so."""
 
 
 def inspect_schema(state: AgentState) -> dict:
@@ -225,55 +196,6 @@ def check_result(state: AgentState) -> dict:
     }
 
 
-def cross_check(state: AgentState) -> dict:
-    if not state.get("cross_check"):
-        return {"agreement": "skipped", "confidence": "unverified"}
-
-    llm = get_llm(temperature=CROSS_CHECK_TEMPERATURE)
-    sql = ""
-
-    try:
-        response = llm.invoke([
-            SystemMessage(content=CROSS_CHECK_SYSTEM.format(schema=state["schema"])),
-            HumanMessage(content=f"Question: {state['question']}"),
-        ])
-        sql = extract_sql(response.content)
-
-        ok, message = validate_sql(sql)
-        if not ok:
-            return {
-                "cross_check_sql": sql,
-                "cross_check_error": f"validation: {message}",
-                "agreement": "inconclusive",
-                "confidence": "unverified",
-            }
-
-        _, rows = run_query(sql)
-    except Exception as e:
-        # A failed cross-check says nothing about the primary answer.
-        return {
-            "cross_check_sql": sql,
-            "cross_check_error": str(e).split("\n")[0][:200],
-            "agreement": "inconclusive",
-            "confidence": "unverified",
-        }
-
-    # Compared both ways: compare_results is directional, and neither query
-    # here is authoritative. One-way would flag ("Helena Holy") against
-    # ("Helena", "Holy") as a disagreement in one order but not the other.
-    _, forward = compare_results(state["rows"], rows)
-    _, backward = compare_results(rows, state["rows"])
-    agrees = forward or backward
-
-    return {
-        "cross_check_sql": sql,
-        "cross_check_rows": rows,
-        "cross_check_error": None,
-        "agreement": "agree" if agrees else "disagree",
-        "confidence": "high" if agrees else "low",
-    }
-
-
 def final_answer(state: AgentState) -> dict:
     if state.get("status") != "success":
         return {
@@ -293,21 +215,6 @@ def final_answer(state: AgentState) -> dict:
         f"Results:\n{table}",
     ]
 
-    if state.get("agreement") == "disagree":
-        other = rows_to_markdown(
-            list(state["cross_check_rows"][0].keys()) if state["cross_check_rows"] else [],
-            state["cross_check_rows"],
-        )
-        parts.append(
-            "WARNING: a second, independently written query for this same "
-            "question returned a DIFFERENT answer. The question is ambiguous "
-            "or a column's meaning is unclear.\n\n"
-            f"Second query:\n{state['cross_check_sql']}\n\n"
-            f"Second result:\n{other}\n\n"
-            "Do not state either result as fact. Explain that the two readings "
-            "disagree, give both, and say what information would settle it."
-        )
-
     response = llm.invoke([
         SystemMessage(content=ANSWER_SYSTEM),
         HumanMessage(content="\n\n".join(parts)),
@@ -326,11 +233,10 @@ def route_after_validation(state: AgentState) -> Literal["execute", "retry", "gi
     return "retry"
 
 
-# Retry loop 2: same shape, but for execution failures. "success" here only
-# means the query RAN; whether it is RIGHT is the cross-check node's job.
-def route_after_result(state: AgentState) -> Literal["verify", "answer", "retry", "give_up"]:
+# Retry loop 2: same shape, but for execution failures.
+def route_after_result(state: AgentState) -> Literal["answer", "retry", "give_up"]:
     if state.get("status") == "success":
-        return "verify" if state.get("cross_check") else "answer"
+        return "answer"
     if state["attempts"] >= state["max_attempts"]:
         return "give_up"
     return "retry"
@@ -344,7 +250,6 @@ def build_graph():
     g.add_node("validate_sql", validate_sql_node)
     g.add_node("execute_sql", execute_sql)
     g.add_node("check_result", check_result)
-    g.add_node("cross_check", cross_check)
     g.add_node("final_answer", final_answer)
 
     g.add_edge(START, "inspect_schema")
@@ -367,14 +272,12 @@ def build_graph():
         "check_result",
         route_after_result,
         {
-            "verify": "cross_check",
             "answer": "final_answer",
             "retry": "generate_sql",
             "give_up": "final_answer",
         },
     )
 
-    g.add_edge("cross_check", "final_answer")
     g.add_edge("final_answer", END)
 
     return g.compile()
@@ -388,7 +291,6 @@ def run_agent(
     max_attempts: int = MAX_ATTEMPTS,
     use_domain_notes: bool = True,
     schema_mode: str = "full",
-    cross_check: bool = False,
 ) -> dict:
     initial: AgentState = {
         "question": question,
@@ -405,12 +307,6 @@ def run_agent(
         "answer": "",
         "use_domain_notes": use_domain_notes,
         "schema_mode": schema_mode,
-        "cross_check": cross_check,
-        "cross_check_sql": "",
-        "cross_check_rows": [],
-        "cross_check_error": None,
-        "agreement": "skipped",
-        "confidence": "unverified",
     }
 
     started = time.time()
@@ -429,13 +325,12 @@ if __name__ == "__main__":
     load_dotenv()
 
     q = " ".join(sys.argv[1:]) or "Which artist has the most albums?"
-    result = run_agent(q, cross_check=True)
+    result = run_agent(q)
 
     print(f"\nQ: {q}")
     print(f"\nSQL:\n{result['sql']}")
     print(f"\nAnswer: {result['answer']}")
     print(f"\nAttempts: {result['attempts']} | status: {result['status']} "
-          f"| agreement: {result['agreement']} | confidence: {result['confidence']} "
           f"| {result['elapsed_s']}s")
     for h in result["history"]:
         flag = "OK" if h["stage"] == "success" else "FAIL"
